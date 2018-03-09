@@ -104,13 +104,18 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
     label_dict::Union{Void,Dict} = nothing,
     eform::Bool = false, ci = true, row = 0, col = 0)
 
-    modelstr = string(typeof(glmout))
-    if !ismatch(r"GLM\.GeneralizedLinearModel",modelstr)
-        error("This is not a GLM model output.")
+    if (typeof(glmout) <: StatsModels.RegressionModel) == false
+        error("This is not a regression model output.")
     end
 
-    distrib = replace(modelstr,r".*Distributions\.(Normal|Bernoulli|Binomial|Bernoulli|Gamma|Normal|Poisson)\{.*",s"\1")
-    linkfun = replace(modelstr,r".*,GLM\.(CauchitLink|CloglogLink|IdentityLink|InverseLink|LogitLink|LogLink|ProbitLink|SqrtLink)\}.*",s"\1")
+    modelstr = string(typeof(glmout))
+    if match(r"GLM\.GeneralizedLinearModel",modelstr) != nothing
+        distrib = replace(modelstr,r".*Distributions\.(Normal|Bernoulli|Binomial|Bernoulli|Gamma|Normal|Poisson)\{.*",s"\1")
+        linkfun = replace(modelstr,r".*,GLM\.(CauchitLink|CloglogLink|IdentityLink|InverseLink|LogitLink|LogLink|ProbitLink|SqrtLink)\}.*",s"\1")
+    else
+        distrib = ""
+        linkfun = ""
+    end
 
     # create a worksheet
     t = wbook[:add_worksheet](wsheet)
@@ -131,7 +136,7 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
     # if eform == true, Estimate is OR for logit, IRR for poisson
     otype = "Estimate"
     if eform == true
-        if distrib == "Binomial" && linkfun == "LogitLink"
+        if distrib in ["Bernoulli","Binomial"] && linkfun == "LogitLink"
             otype = "OR"
         elseif distrib == "Binomial" && linkfun == "LogLink"
             otype = "RR"
@@ -176,6 +181,8 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
         # parse varname to separate variable name from value
         if contains(tdata.rownms[i],":")
             (varname[i],vals[i]) = split(tdata.rownms[i],": ")
+        elseif contains(tdata.rownms[i]," - ")
+            (varname[i],vals[i]) = split(tdata.rownms[i]," - ")
         else
             varname[i] = tdata.rownms[i]
             vals[i] = ""
@@ -185,12 +192,13 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
         if label_dict != nothing
             if vals[i] != ""
                 valn = vals[i] == "true" ? 1 : parse(Int,vals[i])
-                if haskey(vallab,varname[i]) && haskey(vallab[varname[i]],valn)
-                    vals[i] = vallab[varname[i]][valn]
+                lblname = label_dict["label"][Symbol(varname[i])]
+                if haskey(vallab,lblname) && haskey(vallab[lblname],valn)
+                    vals[i] = vallab[lblname][valn]
                 end
             end
-            if haskey(varlab,varname[i])
-                varname[i] = varlab[varname[i]] == "" ? varname[i] : varlab[varname[i]]
+            if haskey(varlab,Symbol(varname[i]))
+                varname[i] = varlab[Symbol(varname[i])] == "" ? varname[i] : varlab[Symbol(varname[i])]
             end
         end
     end
@@ -203,6 +211,9 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
     lastvarname = ""
 
     for i = 1:nrows
+        if otype == "OR" && varname[i] == "(Intercept)"
+            continue
+        end
         if varname[i] != lastvarname
             # output cell boundaries only and go to the next line
             if nlev[i] > 1
@@ -223,7 +234,7 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
                 t[:write_string](r,c,vals[i],formats[:varname_1indent])
 
             else
-                if vals[i] != ""
+                if vals[i] != "" && vals[i] != "Yes"
                     t[:write_string](r,c,string(varname[i]," - ",vals[i]),formats[:heading_left])
                 else
                     t[:write_string](r,c,varname[i],formats[:heading_left])
@@ -269,13 +280,7 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
         end
 
         # P-Value
-        if varname[i] != lastvarname
-            if nlev[i] > 1
-                t[:merge_range](r,c+4,r+nlev[i]-1,c+4,tdata.cols[4][i].v < 0.001 ? "< 0.001" : tdata.cols[4][i].v ,formats[:p_fmt])
-            else
-    	        t[:write](r,c+4,tdata.cols[4][i].v < 0.001 ? "< 0.001" : tdata.cols[4][i].v ,formats[:p_fmt])
-            end
-        end
+        t[:write](r,c+4,tdata.cols[4][i].v < 0.001 ? "< 0.001" : tdata.cols[4][i].v ,formats[:p_fmt])
 
         lastvarname = varname[i]
 
@@ -409,7 +414,7 @@ function bivariatexls(df::DataFrame,
 
     # check data
 
-    # colvar has to be a PooledDataArray and must have 2 or more categories
+    # colvar has to be a CategoricalArray and must have 2 or more categories
     if isa(df[colvar], CategoricalArray) == false || length(levels(df[colvar])) < 2
         error("`",colvar,"` is not a CategoricalArray or does not have two or more levels")
     end
@@ -438,9 +443,9 @@ function bivariatexls(df::DataFrame,
     # number of columns
     # column values
     if wt == nothing
-        collev = freqtable(df2,colvar)
+        collev = freqtable(df2,colvar,skipmissing=true)
     else
-        collev = freqtable(df2,colvar,weights=df2[wt])
+        collev = freqtable(df2,colvar,skipmissing=true,weights=df2[wt])
     end
     nlev = length(collev.array)
     colnms = names(collev,1)
@@ -500,7 +505,7 @@ function bivariatexls(df::DataFrame,
     else
         x = freqtable(df2,colvar,weights=df2[wt])
     end
-    tot = sum(x.array)
+    tot = sum(x)
     t[:write](r,c+1,tot,formats[:n_fmt_right])
     t[:write](r,c+2,1.0,formats[:pct_fmt_parens])
     for i = 1:nlev
@@ -519,10 +524,10 @@ function bivariatexls(df::DataFrame,
         end
 
         # sum of rowvars must be non-zero
-        if sum(dropmissing(df[varname])) == 0
-            warn("`",varname,"` in `rowvars` is empty.")
-            continue
-        end
+        # if sum(length(skipmissing(df[varname]))) == 0
+        #     warn("`",varname,"` in `rowvars` is empty.")
+        #     continue
+        # end
 
         # print the variable name
         vars = string(varname)
@@ -534,12 +539,13 @@ function bivariatexls(df::DataFrame,
 
         # determine if varname is categorical or continuous
         if isa(df2[varname], CategoricalArray) || eltype(df2[varname]) == String
+
             # categorial
             df3=df2[completecases(df2[[varname]]),[varname,colvar]]
             if wt == nothing
-                x = freqtable(df3,varname,colvar)
+                x = freqtable(df3,varname,colvar,skipmissing=true)
             else
-                x = freqtable(df3,varname,colvar,weights=df3[wt])
+                x = freqtable(df3,varname,colvar,skipmissing=true,weights=df3[wt])
             end
             rowval = names(x,1)
             rowtot = sum(x.array,2)
@@ -554,7 +560,7 @@ function bivariatexls(df::DataFrame,
             t[:write_string](r,c,vars,formats[:model_name])
 
             # two levels with [0,1] or [false,true]
-            if length(rowval) == 2 && rowval in ([0,1],[false,true])
+            if length(rowval) == 2 && rowval in ([0,1],[false,true],["No","Yes"])
 
                 # row total
                 t[:write](r,c+1,rowtot[2],formats[:n_fmt_right])
@@ -568,7 +574,7 @@ function bivariatexls(df::DataFrame,
                         t[:write](r,c+j*2+2, rowtot[2] > 0 ? x.array[2,j]/rowtot[2] : "",formats[:pct_fmt_parens])
                     end
                 end
-                pval = pvalue(ChisqTest(deleterc(x.array)))
+                pval = pvalue(ChisqTest(x.array))
                 if isnan(pval) || isinf(pval)
                     pval = ""
                 elseif pval < 0.001
@@ -609,7 +615,8 @@ function bivariatexls(df::DataFrame,
                         end
                     end
                     # p-value - output only once
-                    pval = pvalue(ChisqTest(deleterc(x.array)))
+                    pval = pvalue(ChisqTest(x.array))
+
                     if isnan(pval) || isinf(pval)
                         pval = ""
                     elseif pval < 0.001
@@ -626,7 +633,7 @@ function bivariatexls(df::DataFrame,
         else
             # continuous variable
             df3=df2[completecases(df2[[varname]]),[varname,colvar]]
-            y = tabstat(df3,varname,colvar,wt=df3[wt])
+            y = tabstat(df3,varname,colvar) #,wt=df3[wt])
 
             # variable name
             t[:write_string](r,c,string(vars,", mean (SD)"),formats[:model_name])
@@ -646,7 +653,7 @@ function bivariatexls(df::DataFrame,
                 end
             end
             if size(y,1) > 1
-                pval = anovap(df3,varname,colvar)
+                pval = anova(df3,varname,colvar).p[1]
                 if isnan(pval) || isinf(pval)
                     pval = ""
                 elseif pval < 0.001
