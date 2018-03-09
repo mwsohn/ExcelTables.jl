@@ -823,14 +823,18 @@ function univariatexls(df::DataFrame,
         end
 
         t[:write_string](0,col,varstr,formats[:heading])
-        u = univariate(df,vsym,wt=df[wt])
+        u = univariate(df,vsym) #,wt=df[wt])
         for j = 1:14
             if j<4
                 fmttype = :n_fmt
             else
                 fmttype = :p_fmt
             end
-            t[:write](j,col,u[j,:Value],formats[fmttype])
+            if isnan(u[j,:Value]) || isinf(u[j,:Value])
+                t[:write](j,col,"",formats[fmttype])
+            else
+                t[:write](j,col,u[j,:Value],formats[fmttype])
+            end
         end
         smallest=Stella.smallest(df[vsym])
         if eltype(df) <: Integer
