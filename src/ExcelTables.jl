@@ -1,6 +1,4 @@
-VERSION >= v"0.6.0"
-
-# && __precompile__()
+VERSION >= v"0.6.0" && __precompile__()
 
 module ExcelTables
 

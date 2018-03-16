@@ -108,6 +108,17 @@ function mglmxls(glmout,
     otype = Vector(num_models)
     linkfun = Vector(num_models)
 
+    if label_dict != nothing
+        # variable labels
+        varlab = label_dict["variable"]
+
+        # label names
+        lblname = label_dict["label"]
+
+        # value labels
+        vallab = label_dict["value"]
+    end
+
     for i=1:num_models
 
         # check if the models are GLM outputs
@@ -121,7 +132,7 @@ function mglmxls(glmout,
 
         otype[i] = "Estimate"
         if eform == true
-            if distrib == "Bernoulli" && linkfun == "LogitLink"
+            if distrib in ("Bernoulli","Binomial") && linkfun == "LogitLink"
                 otype[i] = "OR"
             elseif distrib == "Binomial" && linkfun == "LogLink"
                 otype[i] = "RR"
@@ -138,7 +149,7 @@ function mglmxls(glmout,
 
         # assign dependent variables
         for i=1:num_models
-            mtitle[i] = glmout[i].mf.terms.eterms[1]
+            mtitle[i] = label_dict != nothing ? varlab[glmout[i].mf.terms.eterms[1]] : glmout[i].mf.terms.eterms[1]
         end
     end
 
@@ -146,7 +157,7 @@ function mglmxls(glmout,
     t = wbook[:add_worksheet](wsheet)
 
     # attach formats to the workbook
-    formats = Stella.attach_formats(wbook)
+    formats = ExcelTables.attach_formats(wbook)
 
     # starting location in the worksheet
     r = row
@@ -174,14 +185,6 @@ function mglmxls(glmout,
     #------------------------------------------------------------------
     r += 2
     c = col
-
-    if label_dict != nothing
-        # variable labels
-        varlab = label_dict["variable"]
-
-        # value labels
-        vallab = label_dict["value"]
-    end
 
     # collate variables
     covariates = Vector{String}()
@@ -217,19 +220,21 @@ function mglmxls(glmout,
 
         # use labels if exist
         if label_dict != nothing
+            sv = Symbol(varname[i])
             if vals[i] != ""
                 valn = vals[i] == "true" ? 1 : parse(Int,vals[i])
-                if haskey(vallab,varname[i]) && haskey(vallab[varname[i]],valn)
-                    vals[i] = vallab[varname[i]][valn]
+
+                if haskey(lblname,sv) && haskey(vallab,lblname[sv]) && haskey(vallab[lblname[sv]],valn)
+                    vals[i] = vallab[lblname[sv]][valn]
                 end
             end
-            if haskey(varlab,varname[i])
-                varname[i] = varlab[varname[i]] == "" ? varname[i] : varlab[varname[i]]
+            if haskey(varlab,sv)
+                varname[i] = varlab[sv] == "" ? varname[i] : varlab[sv]
             end
         end
     end
     for i = 1:nrows
-        nlev[i] = Stella.countlev(varname[i],varname)
+        nlev[i] = ExcelTables.countlev(varname[i],varname)
     end
 
     # write table
@@ -239,25 +244,31 @@ function mglmxls(glmout,
         if varname[i] != lastvarname
             # output cell boundaries only and go to the next line
             if nlev[i] > 1
+
+                # variable name
                 t[:write_string](r,c,varname[i],formats[:heading_left])
 
-                if ci == true
-                    t[:write](r,c+1,"",formats[:empty_right])
-                    t[:write](r,c+2,"",formats[:empty_both])
-                    t[:write](r,c+3,"",formats[:empty_left])
-                    t[:write](r,c+4,"",formats[:p_fmt])
-                else
-                    t[:write](r,c+1,"",formats[:empty_border])
-                    t[:write](r,c+2,"",formats[:empty_border])
-                    t[:write](r,c+3,"",formats[:empty_border])
-                    t[:write](r,c+4,"",formats[:p_fmt])
+                for k = 1:num_models
+                    if ci == true
+                        t[:write](r,c+1,"",formats[:empty_right])
+                        t[:write](r,c+2,"",formats[:empty_both])
+                        t[:write](r,c+3,"",formats[:empty_left])
+                        t[:write](r,c+4,"",formats[:p_fmt])
+                    else
+                        t[:write](r,c+1,"",formats[:empty_border])
+                        t[:write](r,c+2,"",formats[:empty_border])
+                        t[:write](r,c+3,"",formats[:empty_border])
+                        t[:write](r,c+4,"",formats[:p_fmt])
+                    end
+                    c += 4
                 end
+                c = col
                 r += 1
                 t[:write_string](r,c,vals[i],formats[:varname_1indent])
 
             else
-                if vals[i] != ""
-                    t[:write_string](r,c,string(varname[i]," - ",vals[i]),formats[:heading_left])
+                if vals[i] != "" && vals[i] != "Yes"
+                    t[:write_string](r,c,string(varname[i],": ",vals[i]),formats[:heading_left])
                 else
                     t[:write_string](r,c,varname[i],formats[:heading_left])
                 end
@@ -321,13 +332,7 @@ function mglmxls(glmout,
             end
 
             # P-Value
-            if varname[i] != lastvarname
-                if nlev[i] > 1
-                    t[:merge_range](r,c+4,r+nlev[i]-1,c+4,tdata[j].cols[4][i].v < 0.001 ? "< 0.001" : tdata[j].cols[4][i].v ,formats[:p_fmt])
-                else
-        	        t[:write](r,c+4,tdata[j].cols[4][i].v < 0.001 ? "< 0.001" : tdata[j].cols[4][i].v ,formats[:p_fmt])
-                end
-            end
+	        t[:write](r,c+4,tdata[j].cols[4][i].v < 0.001 ? "< 0.001" : tdata[j].cols[4][i].v ,formats[:p_fmt])
 
             c += 4
 
@@ -337,7 +342,7 @@ function mglmxls(glmout,
 
         # update row
         r += 1
-        c = 0
+        c = col
     end
 end
 function mglmxls(glmout,

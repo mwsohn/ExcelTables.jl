@@ -501,9 +501,9 @@ function bivariatexls(df::DataFrame,
     r += 2
     t[:write_string](r,c,"All, n (Row %)",formats[:model_name])
     if wt == nothing
-        x = freqtable(df2,colvar)
+        x = freqtable(df2,colvar,skipmissing=true)
     else
-        x = freqtable(df2,colvar,weights=df2[wt])
+        x = freqtable(df2,colvar,skipmissing=true,weights=df2[wt])
     end
     tot = sum(x)
     t[:write](r,c+1,tot,formats[:n_fmt_right])
