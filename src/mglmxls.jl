@@ -123,12 +123,15 @@ function mglmxls(glmout,
 
         # check if the models are GLM outputs
         modelstr[i] = string(typeof(glmout[i]))
-        if !ismatch(r"GLM\.GeneralizedLinearModel",modelstr[i])
-            error(modelstr[i]," is not a GLM model output.")
-        end
 
-        distrib = replace(modelstr[i],r".*Distributions\.(Normal|Bernoulli|Binomial|Bernoulli|Gamma|Normal|Poisson)\{.*",s"\1")
-        linkfun = replace(modelstr[i],r".*,GLM\.(CauchitLink|CloglogLink|IdentityLink|InverseLink|LogitLink|LogLink|ProbitLink|SqrtLink)\}.*",s"\1")
+        # if (typeof(modelstr[i]) <: RegressionModel) == false
+        #     error("This is not a regression model: ",i)
+        # end
+
+        if ismatch(r"GLM\.GeneralizedLinearModel",modelstr[i])
+            distrib = replace(modelstr[i],r".*Distributions\.(Normal|Bernoulli|Binomial|Bernoulli|Gamma|Normal|Poisson)\{.*",s"\1")
+            linkfun = replace(modelstr[i],r".*,GLM\.(CauchitLink|CloglogLink|IdentityLink|InverseLink|LogitLink|LogLink|ProbitLink|SqrtLink)\}.*",s"\1")
+        end
 
         otype[i] = "Estimate"
         if eform == true
@@ -211,7 +214,10 @@ function mglmxls(glmout,
     for i = 1:nrows
     	# variable name
         # parse varname to separate variable name from value
-        if contains(covariates[i],":")
+        if contains(covariates[i]," & ")
+            varname[i] = covariates[i]
+            vals[i] = ""
+        elseif contains(covariates[i],":")
             (varname[i],vals[i]) = split(covariates[i],": ")
         else
             varname[i] = covariates[i]
@@ -246,7 +252,7 @@ function mglmxls(glmout,
             if nlev[i] > 1
 
                 # variable name
-                t[:write_string](r,c,varname[i],formats[:heading_left])
+                t[:write_string](r,c,varname[i],formats[:model_name])
 
                 for k = 1:num_models
                     if ci == true
@@ -268,9 +274,9 @@ function mglmxls(glmout,
 
             else
                 if vals[i] != "" && vals[i] != "Yes"
-                    t[:write_string](r,c,string(varname[i],": ",vals[i]),formats[:heading_left])
+                    t[:write_string](r,c,string(varname[i],": ",vals[i]),formats[:model_name])
                 else
-                    t[:write_string](r,c,varname[i],formats[:heading_left])
+                    t[:write_string](r,c,varname[i],formats[:model_name])
                 end
             end
         else
@@ -334,6 +340,9 @@ function mglmxls(glmout,
             # P-Value
 	        t[:write](r,c+4,tdata[j].cols[4][i].v < 0.001 ? "< 0.001" : tdata[j].cols[4][i].v ,formats[:p_fmt])
 
+
+
+
             c += 4
 
         end
@@ -343,6 +352,64 @@ function mglmxls(glmout,
         # update row
         r += 1
         c = col
+    end
+
+    # Write model characteristics and goodness of fit statistics
+    c = col
+    row2 = r
+    for i=1:num_models
+
+        # N
+        t[:write](r,c,"N",formats[:model_name])
+        t[:merge_range](r,c+1,r,c+4,nobs(glmout[i]),formats[:n_fmt_center])
+
+        # degress of freedom
+        r += 1
+        t[:write](r,c,"DF",formats[:model_name])
+        t[:merge_range](r,c+1,r,c+4,dof(glmout[i]),formats[:n_fmt_center])
+
+        # R² or pseudo R²
+        r += 1
+        if linkfun == "LogitLink"
+            t[:write](r,c,"Pseudo R² (MacFadden)",formats[:model_name])
+            t[:merge_range](r,c+1,r,c+4,macfadden(glmout[i]),formats[:p_fmt_center])
+            t[:write](r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])
+            t[:merge_range](r+1,c+1,r+1,c+4,nagelkerke(glmout[i]),formats[:p_fmt_center])
+
+            # -2 log-likelihood
+            t[:write](r+2,c,"-2 Log-Likelihood",formats[:model_name])
+            t[:merge_range](r+2,c+1,r+2,c+4,deviance(glmout[i]),formats[:p_fmt_center])
+
+            # Hosmer-Lemeshow GOF test
+            t[:write](r+3,c,"Hosmer-Lemeshow Chisq Test (df), p-value",formats[:model_name])
+            hl = hltest(glmout[i])
+            t[:merge_range](r+3,c+1,r+3,c+4,string(round(hl[1],4)," (",hl[2],"); p = ",round(hl[3],4)),formats[:p_fmt_center])
+
+            # ROC (c-statistic)
+            t[:write](r+4,c,"Area under the ROC Curve",formats[:model_name])
+            roc = auc(glmout[i].model.rr.y,predict(glmout[i]))
+            t[:merge_range](r+4,c+1,r+4,c+4,round(roc,4),formats[:p_fmt_center])
+
+            r += 5
+        else
+            t[:write](r,c,"R²",formats[:model_name])
+            t[:merge_range](r,c+1,r,c+4,r2(glmout[i]),formats[:p_fmt_center])
+            t[:write](r+1,c,"Adjusted R²",formats[:model_name])
+            t[:merge_range](r+1,c+1,r+1,c+4,adjr2(glmout[i]),formats[:p_fmt_center])
+
+            r += 2
+        end
+
+        # AIC & BIC
+        t[:write](r,c,"AIC",formats[:model_name])
+        t[:merge_range](r,c+1,r,c+4,aic(glmout[i]),formats[:p_fmt_center])
+
+        r += 1
+        t[:write](r,c,"BIC",formats[:model_name])
+        t[:merge_range](r,c+1,r,c+4,bic(glmout[i]),formats[:p_fmt_center])
+
+        r = row2
+        c += 4
     end
 end
 function mglmxls(glmout,

@@ -8,7 +8,7 @@ module ExcelTables
 ##
 ################################################################################
 
-using DataFrames, PyCall, Distributions, GLM, StatsBase, DataStructures, HypothesisTests, NamedArrays, FreqTables, Stella
+using DataFrames, PyCall, Distributions, GLM, StatsBase, DataStructures, HypothesisTests, NamedArrays, FreqTables, Stella, AUC
 
 ##############################################################################
 ##
