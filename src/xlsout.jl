@@ -71,7 +71,7 @@ This example is useful when one wants to append a worksheet to an existing workb
 It is responsibility of the user to open a workbook before the function call and close it
 to actually create the physical file by close the workbook.
 
-```jldoctest
+```
 julia> using PyCall
 
 julia> @pyimport xlsxwriter
@@ -79,9 +79,9 @@ julia> @pyimport xlsxwriter
 julia> wb = xlsxwriter.Workbook("test_workbook.xlsx")
 PyObject <xlsxwriter.workbook.Workbook object at 0x000000002A628E80>
 
-julia> glmxls(ols1,wb,"OLS1",label_dict = label)
+julia> glmxls(ols1,wb,"OLS1",labels = label)
 
-julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate",label_dict = label)
+julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate",labels = label)
 
 Julia> wb[:close]()
 ```
@@ -90,60 +90,13 @@ Julia> wb[:close]()
 Alternatively, one can create a spreadsheet file directly. `PyCall` or `@pyimport`
 does not need to be called before the function.
 
-```jldoctest
-julia> glmxls(ols1,"test_workbook.xlsx","OLS1",label_dict = label)
+```
+julia> glmxls(ols1,"test_workbook.xlsx","OLS1",labels = label)
 ```
 
-# Example 3
-A `label` dictionary is a collection of dictionaries, two of which are `variable` and `value`
-dictionaries. The label dictionary can be created as follows:
-```jldoctest
-julia> label = Dict()
-Dict{Any,Any} with 0 entries
-
-julia> label["variable"] = Dict(
-    "age" => "Age at baseline",
-    "race" => "Race/ethnicity",
-    "male" => "Male sex",
-    "bmicat" => "Body Mass Index Category")
-Dict{String,String} with 4 entries:
-  "male"   => "Male sex"
-  "race"   => "Race/ethnicity"
-  "bmicat" => "Body Mass Index Category"
-  "age"    => "Age at baseline"
-
-julia> label["value"] = Dict()
-Dict{Any,Any} with 0 entries
-
-julia> label["value"]["race"] = Dict(
-    1 => "White",
-    2 => "Black",
-    3 => "Hispanic",
-    4 => "Other")
-Dict{Int64,String} with 4 entries:
-  4 => "Other"
-  2 => "Black"
-  3 => "Hispanic"
-  1 => "White"
-
-julia> label["value"]["bmicat"] = Dict(
-    1 => "< 25 kg/m²",
-    2 => "25 - 29.9",
-    3 => "20 or over")
-Dict{Int64,String} with 3 entries:
-  2 => "25 - 29.9"
-  3 => "20 or over"
-  1 => "< 25 kg/m²"
-
- julia> label["variable"]["male"]
- "Male sex"
-
- julia> label["value"]["bmicat"][1]
- "< 25 kg/m²"
- ```
 """
 function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
-    label_dict::Union{Void,Dict} = nothing,
+    labels::Union{Void,Labels} = nothing,
     eform::Bool = false, ci = true, row = 0, col = 0)
 
     if (typeof(glmout) <: StatsModels.RegressionModel) == false
@@ -203,14 +156,6 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
     r += 1
     c = col
 
-    if label_dict != nothing
-        # variable labels
-        varlab = label_dict["variable"]
-
-        # value labels
-        vallab = label_dict["value"]
-    end
-
     # go through each variable and construct variable name and value label arrays
     tdata = coeftable(glmout)
     nrows = length(tdata.rownms)
@@ -231,17 +176,12 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
         end
 
         # use labels if exist
-        if label_dict != nothing
+        if labels != nothing
             if vals[i] != ""
                 valn = vals[i] == "true" ? 1 : parse(Int,vals[i])
-                lblname = label_dict["label"][Symbol(varname[i])]
-                if haskey(vallab,lblname) && haskey(vallab[lblname],valn)
-                    vals[i] = vallab[lblname][valn]
-                end
+                vals[i] = vallab(labels,Symbol(varname[i]),valn)
             end
-            if haskey(varlab,Symbol(varname[i]))
-                varname[i] = varlab[Symbol(varname[i])] == "" ? varname[i] : varlab[Symbol(varname[i])]
-            end
+            varname[i] = varlab(labels,Symbol(varname[i]))
         end
     end
     for i = 1:nrows
@@ -390,7 +330,7 @@ end
 function glmxls(glmout,
     wbook::AbstractString,
     wsheet::AbstractString;
-    label_dict::Union{Void,Dict} = nothing,
+    labels::Union{Void,Labels} = nothing,
     eform::Bool = false,
     ci = true,
     row = 0,
@@ -398,14 +338,14 @@ function glmxls(glmout,
 
     xlsxwriter = pyimport("xlsxwriter")
 
-    glmxls(glmout,xlsxwriter[:Workbook](wbook),wsheet,label_dict=label_dict,eform=eform,ci=ci,row=row,col=col)
+    glmxls(glmout,xlsxwriter[:Workbook](wbook),wsheet,labels=labels,eform=eform,ci=ci,row=row,col=col)
 end
 
 """
 Function created specifically to address the need for Carrie Foster's paper
 """
 function glmxls2(glmout,wbook::PyObject,wsheet::AbstractString;
-    label_dict::Union{Void,Dict} = nothing,
+    labels::Union{Void,Labels} = nothing,
     eform::Bool = false, ci = true, row = 0, col = 0)
 
     if (typeof(glmout) <: StatsModels.RegressionModel) == false
@@ -463,14 +403,6 @@ function glmxls2(glmout,wbook::PyObject,wsheet::AbstractString;
     r += 1
     c = col
 
-    if label_dict != nothing
-        # variable labels
-        varlab = label_dict["variable"]
-
-        # value labels
-        vallab = label_dict["value"]
-    end
-
     # go through each variable and construct variable name and value label arrays
     tdata = coeftable(glmout)
     nrows = length(tdata.rownms)
@@ -492,17 +424,12 @@ function glmxls2(glmout,wbook::PyObject,wsheet::AbstractString;
         end
 
         # use labels if exist
-        if label_dict != nothing
+        if labels != nothing
             if vals[i] != ""
                 valn = vals[i] == "true" ? 1 : parse(Int,vals[i])
-                lblname = label_dict["label"][Symbol(varname[i])]
-                if haskey(vallab,lblname) && haskey(vallab[lblname],valn)
-                    vals[i] = vallab[lblname][valn]
-                end
+                vals[i] = vallab(labels,Symbol(varname[i]),valn)
             end
-            if haskey(varlab,Symbol(varname[i]))
-                varname[i] = varlab[Symbol(varname[i])] == "" ? varname[i] : varlab[Symbol(varname[i])]
-            end
+            varname[i] = varlab(labels, Symbol(varname[i]))
         end
     end
     for i = 1:nrows
@@ -746,7 +673,7 @@ function bivariatexls(df::DataFrame,
     wbook::PyObject,
     wsheet::AbstractString;
     wt::Union{Void,Symbol} = nothing,
-    label_dict::Union{Void,Dict} = nothing,
+    labels::Union{Void,Labels} = nothing,
     row::Int = 0,
     col::Int = 0,
     column_percent::Bool = true,
@@ -757,14 +684,6 @@ function bivariatexls(df::DataFrame,
     # colvar has to be a CategoricalArray and must have 2 or more categories
     if isa(df[colvar], CategoricalArray) == false || length(levels(df[colvar])) < 2
         error("`",colvar,"` is not a CategoricalArray or does not have two or more levels")
-    end
-
-    if label_dict != nothing
-        # variable labels
-        varlab = label_dict["variable"]
-
-        # value labels
-        vallab = label_dict["value"]
     end
 
     # create a worksheet
@@ -821,11 +740,8 @@ function bivariatexls(df::DataFrame,
 
         # value label
         vals = string(colnms[i])
-        if label_dict != nothing && haskey(label_dict["label"],colvar)
-            lblname = label_dict["label"][colvar]
-            if haskey(vallab,lblname) && haskey(vallab[lblname],colnms[i]) && vallab[lblname][colnms[i]] != ""
-                vals = vallab[lblname][colnms[i]]
-            end
+        if labels != nothing
+            vals = vallab(labels,colvar,colnms[i])
         end
 
         t[:merge_range](r,c+(i-1)*2,r,c+(i-1)*2+1,vals,formats[:heading])
@@ -1013,7 +929,7 @@ function bivariatexls(df::DataFrame,
     rowvars::Vector{Symbol},
     wbook::AbstractString,
     wsheet::AbstractString;
-    label_dict::Union{Void,Dict} = nothing,
+    labels::Union{Void,Labels} = nothing,
     row::Int = 0,
     col::Int = 0)
 
@@ -1021,7 +937,7 @@ function bivariatexls(df::DataFrame,
 
     wb = xlsxwriter[:Workbook](wbook)
 
-    bivariatexls(df,colvar,rowvars,wb,wsheet,label_dict=label_dict,row=row,col=col)
+    bivariatexls(df,colvar,rowvars,wb,wsheet,labels=labels,row=row,col=col)
 
     wb[:close]()
 end
@@ -1049,7 +965,7 @@ This example is useful when one wants to append a worksheet to an existing workb
 It is responsibility of the user to open a workbook before the function call and close it
 to actually create the physical file by close the workbook.
 
-```jldoctest
+```
 julia> using PyCall
 
 julia> @pyimport xlsxwriter
@@ -1074,43 +990,15 @@ does not need to be called before the function.
 julia> univariatexls(df,[:age,:income_amt,:bmi],"test_workbook.xlsx","Bivariate",label_dict = label)
 ```
 
-# Example 3
-A `label` dictionary is a collection of dictionaries, two of which are `variable` and `value`
-dictionaries. The label dictionary can be created as follows:
-
-```jldoctest
-julia> label = Dict()
-Dict{Any,Any} with 0 entries
-
-julia> label["variable"] = Dict(
-    "age" => "Age at baseline",
-    "race" => "Race/ethnicity",
-    "male" => "Male sex",
-    "bmicat" => "Body Mass Index Category")
-Dict{String,String} with 4 entries:
-  "male"   => "Male sex"
-  "race"   => "Race/ethnicity"
-  "bmicat" => "Body Mass Index Category"
-  "age"    => "Age at baseline"
-
- julia> label["variable"]["male"]
- "Male sex"
- ```
-
 """
 function univariatexls(df::DataFrame,
     contvars::Vector{Symbol},
     wbook::PyObject,
     wsheet::AbstractString;
     wt::Union{Void,Symbol} = nothing,
-    label_dict::Union{Void,Dict}=nothing,
+    labels::Union{Void,Labels}=nothing,
     row = 0,
     col = 0)
-
-    if label_dict != nothing
-        # variable labels
-        varlab = label_dict["variable"]
-    end
 
     # create a worksheet
     t = wbook[:add_worksheet](wsheet)
@@ -1158,8 +1046,8 @@ function univariatexls(df::DataFrame,
 
         # if there is a label dictionary, pick up the variable label
         varstr = string(vsym)
-        if label_dict != nothing && haskey(varlab,varstr)
-            varstr = varlab[varstr] == "" ? varstr : varlab[varstr]
+        if labels != nothing
+            varstr = varlab(labels,vsym)
         end
 
         t[:write_string](0,col,varstr,formats[:heading])
@@ -1193,13 +1081,13 @@ function univariatexls(df::DataFrame,
     end
 end
 function univariatexls(df::DataFrame,contvars::Vector{Symbol},wbook::AbstractString,wsheet::AbstractString;
-    wt::Union{Void,Symbol} = nothing,label_dict::Union{Void,Dict}=nothing, row = 0, col = 0)
+    wt::Union{Void,Symbol} = nothing,labels::Union{Void,Labels}=nothing, row = 0, col = 0)
 
     xlsxwriter=pyimport("xlsxwriter")
 
     wb = wlsxwriter[:Workbook](wbook)
 
-    univariatexls(df,contvars,wb,wsheet,wt=wt,label_dict=label_dict,row=row,col=col)
+    univariatexls(df,contvars,wb,wsheet,wt=wt,labels=labels,row=row,col=col)
 
     wb[:close]()
 end
@@ -1353,356 +1241,4 @@ function countlev(str::AbstractString,sarray::Vector{String})
         end
     end
     return k
-end
-
-
-format_defs = Dict()
-
-format_defs[:heading] = Dict(
-	"bold" => true,
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "center",
-	"border" => true
-)
-
-format_defs[:text] = Dict(
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "left",
-	"border" => true
-)
-
-format_defs[:heading_right] = Dict(
-	"bold" => true,
-	"font" => "Arial",
-	"size" => 10,
-	"valign" => "vcenter",
-	"align" => "right",
-	"left" => true, "bottom" => true, "top" => true
-)
-
-format_defs[:heading_left] = Dict(
-	"bold" => true,
-	"font" => "Arial",
-	"size" => 10,
-	"valign" => "vcenter",
-	"align" => "left",
-	"right" => true, "bottom" => true, "top" => true
-)
-
-format_defs[:model_name] = Dict(
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "left",
-	"border" => true
-)
-
-format_defs[:varname_1indent] = Dict(
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "left",
-	"border" => true,
-	"indent" => 1
-)
-
-
-format_defs[:varname_2indent] = Dict(
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "left",
-	"border" => true,
-	"indent" => 2
-)
-
-
-format_defs[:n_fmt_right] = Dict(
-	"num_format" => "#,##0",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "right",
-	"left" => true, "bottom" => true, "top" => true
-)
-
-
-format_defs[:n_fmt_left_parens] = Dict(
-	"num_format" => "(#,##0)",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "right",
-	"right" => true, "bottom" => true, "top" => true
-)
-
-format_defs[:f_fmt_right] = Dict(
-	"num_format" => "#,##0.00",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "right",
-	"left" => true, "bottom" => true, "top" => true
-)
-
-format_defs[:f_fmt_center] = Dict(
-	"num_format" => "#,##0.0000",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "center",
-	"border" => true
-)
-
-format_defs[:f_fmt] = Dict(
-	"num_format" => "#,##0.00",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "right",
-	"border" => true
-)
-
-
-format_defs[:n_fmt] = Dict(
-	"num_format" => "#,##0",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "right",
-	"border" => true
-)
-
-format_defs[:n_fmt_center] = Dict(
-	"num_format" => "#,##0",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "center",
-	"border" => true
-)
-
-format_defs[:f_fmt_left_parens] = Dict(
-	"num_format" => "(#,##0.00)",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "left",
-	"right" => true, "bottom" => true, "top" => true
-)
-
-
-format_defs[:pct_fmt_parens] = Dict(
-	"num_format" => "(0.00%)",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "left",
-	"right" => true, "bottom" => true, "top" => true
-)
-
-
-format_defs[:pct_fmt] = Dict(
-	"num_format" => "0.00%",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "right",
-	"border" => true
-)
-
-format_defs[:or_fmt] = Dict(
-	"num_format" => "0.000",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "right",
-	"left" => true, "bottom" => true, "top" => true
-)
-
-format_defs[:cilb_fmt] = Dict(
-	"num_format" => "(0.000 -",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "right",
-	"bottom" => true, "top" => true
-)
-
-format_defs[:ciub_fmt] = Dict(
-	"num_format" => "0.000)",
-	"font" => "Arial",
-	"font_size" => 9,
-	"valign" => "vcenter",
-	"align" => "left",
-	"right" => true, "bottom" => true, "top" => true
-)
-
-
-format_defs[:or_fmt_red] = Dict(
-	"num_format" => "0.000",
-	"font" => "Arial",
-	"font_size" => 9,
-	"font_color" => "red",
-	"valign" => "vcenter",
-	"align" => "right",
-	"left" => true, "bottom" => true, "top" => true
-)
-
-format_defs[:cilb_fmt_red] = Dict(
-	"num_format" => "(0.000 -",
-	"font" => "Arial",
-	"font_size" => 9,
-	"font_color" => "red",
-	"valign" => "vcenter",
-	"align" => "right",
-	"bottom" => true, "top" => true
-)
-
-format_defs[:ciub_fmt_red] = Dict(
-	"num_format" => "0.000)",
-	"font" => "Arial",
-	"font_size" => 9,
-	"font_color" => "red",
-	"valign" => "vcenter",
-	"align" => "left",
-	"right" => true, "bottom" => true, "top" => true
-)
-
-
-format_defs[:or_fmt_bold] = Dict(
-	"num_format" => "0.000",
-	"font" => "Arial",
-	"font_size" => 9,
-	"bold" => true,
-	"valign" => "vcenter",
-	"align" => "right",
-	"left" => true, "bottom" => true, "top" => true
-)
-
-format_defs[:cilb_fmt_bold] = Dict(
-	"num_format" => "(0.000 -",
-	"font" => "Arial",
-	"font_size" => 9,
-	"bold" => true,
-	"valign" => "vcenter",
-	"align" => "right",
-	"bottom" => true, "top" => true
-)
-
-format_defs[:ciub_fmt_bold] = Dict(
-	"num_format" => "0.000)",
-	"font" => "Arial",
-	"font_size" => 9,
-	"bold" => true,
-	"valign" => "vcenter",
-	"align" => "left",
-	"right" => true, "bottom" => true, "top" => true
-)
-
-format_defs[:p_fmt] = Dict(
-	"num_format" => "0.000",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "right",
-	"border" => true
-)
-
-format_defs[:p_fmt_center] = Dict(
-	"num_format" => "0.000",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "center",
-	"border" => true
-)
-
-format_defs[:p_fmt2] = Dict(
-	#"num_format" => "0.000",
-	"font" => "Arial",
-	"size" => 9,
-	"valign" => "vcenter",
-	"align" => "right",
-	"border" => true
-)
-
-
-format_defs[:p_fmt_red] = Dict(
-	"num_format" => "0.000",
-	"font" => "Arial",
-	"font_size" => 9,
-	"font_color" => "red",
-	"valign" => "vcenter",
-	"align" => "right",
-	"border" => true
-)
-
-format_defs[:p_fmt2_red] = Dict(
-	#"num_format" => "0.000",
-	"font" => "Arial",
-	"font_size" => 9,
-	"font_color" => "red",
-	"valign" => "vcenter",
-	"align" => "right",
-	"border" => true
-)
-
-
-format_defs[:p_fmt_bold] = Dict(
-	"num_format" => "0.000",
-	"font" => "Arial",
-	"font_size" => 9,
-	"bold" => true,
-	"valign" => "vcenter",
-	"align" => "right",
-	"border" => true
-)
-
-format_defs[:p_fmt2_bold] = Dict(
-	#"num_format" => "0.000",
-	"font" => "Arial",
-	"font_size" => 9,
-	"bold" => true,
-	"valign" => "vcenter",
-	"align" => "right",
-	"border" => true
-)
-
-format_defs[:empty_border] = Dict(
-	#"num_format" => "0.000",
-	"valign" => "vcenter",
-	"border" => true
-)
-
-format_defs[:empty_left] = Dict(
-	#"num_format" => "0.000",
-	"valign" => "vcenter",
-	"right" => true, "bottom" => true, "top" => true
-)
-
-format_defs[:empty_right] = Dict(
-	#"num_format" => "0.000",
-	"valign" => "vcenter",
-	"left" => true, "bottom" => true, "top" => true
-)
-
-
-format_defs[:empty_both] = Dict(
-	#"num_format" => "0.000",
-	"valign" => "vcenter",
-	"bottom" => true, "top" => true
-)
-
-
-function attach_formats(workbook;formats::Dict = format_defs)
-	newfmts = Dict()
-	for key in keys(formats)
-		newfmts[key] = workbook[:add_format](formats[key])
-	end
-	return newfmts
 end

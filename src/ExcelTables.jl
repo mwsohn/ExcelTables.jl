@@ -8,7 +8,7 @@ module ExcelTables
 ##
 ################################################################################
 
-using DataFrames, PyCall, Distributions, GLM, StatsBase, DataStructures, HypothesisTests, NamedArrays, FreqTables, Stella, AUC
+using DataFrames, PyCall, Distributions, GLM, StatsBase, DataStructures, HypothesisTests, NamedArrays, FreqTables, Stella, Labels, AUC
 
 ##############################################################################
 ##
@@ -29,5 +29,6 @@ export  univariatexls, # output univariate statistics in an excel worksheet
 ##############################################################################
 include("xlsout.jl")
 include("mglmxls.jl")
+include("formats.jl")
 
 end # module

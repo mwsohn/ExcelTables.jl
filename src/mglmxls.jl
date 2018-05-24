@@ -96,7 +96,7 @@ function mglmxls(glmout,
     wbook::PyObject,
     wsheet::AbstractString;
     mtitle::Union{Vector,Void} = nothing,
-    label_dict::Union{Void,Dict} = nothing,
+    labels::Union{Void,Labels} = nothing,
     eform::Bool = false,
     ci = true,
     row = 0,
@@ -107,17 +107,6 @@ function mglmxls(glmout,
     modelstr = Vector(num_models)
     otype = Vector(num_models)
     linkfun = Vector(num_models)
-
-    if label_dict != nothing
-        # variable labels
-        varlab = label_dict["variable"]
-
-        # label names
-        lblname = label_dict["label"]
-
-        # value labels
-        vallab = label_dict["value"]
-    end
 
     for i=1:num_models
 
@@ -225,18 +214,13 @@ function mglmxls(glmout,
         end
 
         # use labels if exist
-        if label_dict != nothing
+        if labels != nothing
             sv = Symbol(varname[i])
             if vals[i] != ""
                 valn = vals[i] == "true" ? 1 : parse(Int,vals[i])
-
-                if haskey(lblname,sv) && haskey(vallab,lblname[sv]) && haskey(vallab[lblname[sv]],valn)
-                    vals[i] = vallab[lblname[sv]][valn]
-                end
+                vals[i] = vallab(labels,sv,valn)
             end
-            if haskey(varlab,sv)
-                varname[i] = varlab[sv] == "" ? varname[i] : varlab[sv]
-            end
+            varname[i] = varlab(labels,sv)
         end
     end
     for i = 1:nrows
@@ -416,7 +400,7 @@ function mglmxls(glmout,
     wbook::AbstractString,
     wsheet::AbstractString;
     mtitle::Union{String,Void} = nothing,
-    label_dict::Union{Void,Dict} = nothing,
+    labels::Union{Void,Labels} = nothing,
     eform::Bool = false,
     ci = true,
     row = 0,
@@ -424,5 +408,5 @@ function mglmxls(glmout,
 
     xlsxwriter = pyimport("xlsxwriter")
 
-    mglmxls(glmout,xlsxwriter[:Workbook](wbook),wsheet,label_dict=label_dict,mtitle=mtitle,eform=eform,ci=ci,row=row,col=col)
+    mglmxls(glmout,xlsxwriter[:Workbook](wbook),wsheet,labels=labels,mtitle=mtitle,eform=eform,ci=ci,row=row,col=col)
 end
