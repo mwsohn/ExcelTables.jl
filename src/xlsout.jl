@@ -50,7 +50,7 @@ end
 
 
 """
-    glmxls(glmout::DataFrames.DataFrameRegressionModel, workbook::PyObject, worksheet::AbstractString; label_dict::Union{Void,Dict}=nothing,eform=false,ci=true, row = 0, col =0)
+    glmxls(glmout::DataFrames.DataFrameRegressionModel, workbook::PyObject, worksheet::AbstractString; label_dict::Union{Nothing,Dict}=nothing,eform=false,ci=true, row = 0, col =0)
 
 Outputs a GLM regression table to an excel spreadsheet.
 To use this function, `PyCall` is required with a working version python and
@@ -96,7 +96,7 @@ julia> glmxls(ols1,"test_workbook.xlsx","OLS1",labels = label)
 
 """
 function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
-    labels::Union{Void,Labels} = nothing,
+    labels::Union{Nothing,Label} = nothing,
     eform::Bool = false, ci = true, row = 0, col = 0)
 
     if (typeof(glmout) <: StatsModels.RegressionModel) == false
@@ -330,7 +330,7 @@ end
 function glmxls(glmout,
     wbook::AbstractString,
     wsheet::AbstractString;
-    labels::Union{Void,Labels} = nothing,
+    labels::Union{Nothing,Label} = nothing,
     eform::Bool = false,
     ci = true,
     row = 0,
@@ -345,7 +345,7 @@ end
 Function created specifically to address the need for Carrie Foster's paper
 """
 function glmxls2(glmout,wbook::PyObject,wsheet::AbstractString;
-    labels::Union{Void,Labels} = nothing,
+    labels::Union{Nothing,Label} = nothing,
     eform::Bool = false, ci = true, row = 0, col = 0)
 
     if (typeof(glmout) <: StatsModels.RegressionModel) == false
@@ -570,7 +570,7 @@ end
 
 
 """
-    bivariatexls(df::DataFrame,colvar::Symbol,rowvars::Vector{Symbol},workbook::PyObject,worksheet::AbstractString; label_dict::Union{Void,Dict}=nothing,row=0,col=0)
+    bivariatexls(df::DataFrame,colvar::Symbol,rowvars::Vector{Symbol},workbook::PyObject,worksheet::AbstractString; label_dict::Union{Nothing,Dict}=nothing,row=0,col=0)
 
  Creates bivariate statistics and appends it in a nice tabular format to an existing workbook.
  To use this function, `PyCall` is required with a working version python and
@@ -672,8 +672,8 @@ function bivariatexls(df::DataFrame,
     rowvars::Vector{Symbol},
     wbook::PyObject,
     wsheet::AbstractString;
-    wt::Union{Void,Symbol} = nothing,
-    labels::Union{Void,Labels} = nothing,
+    wt::Union{Nothing,Symbol} = nothing,
+    labels::Union{Nothing,Label} = nothing,
     row::Int = 0,
     col::Int = 0,
     column_percent::Bool = true,
@@ -929,7 +929,7 @@ function bivariatexls(df::DataFrame,
     rowvars::Vector{Symbol},
     wbook::AbstractString,
     wsheet::AbstractString;
-    labels::Union{Void,Labels} = nothing,
+    labels::Union{Nothing,Label} = nothing,
     row::Int = 0,
     col::Int = 0)
 
@@ -944,7 +944,7 @@ end
 
 
 """
-    univariatexls(df::DataFrame,contvars::Vector{Symbol},workbook::PyObject,worksheet::AbstractString; label_dict::Union{Void,Dict}=nothing,row=0,col=0)
+    univariatexls(df::DataFrame,contvars::Vector{Symbol},workbook::PyObject,worksheet::AbstractString; label_dict::Union{Nothing,Dict}=nothing,row=0,col=0)
 
 Creates univariate statistics for a vector of continuous variable and
 appends it to an existing workbook.
@@ -995,8 +995,8 @@ function univariatexls(df::DataFrame,
     contvars::Vector{Symbol},
     wbook::PyObject,
     wsheet::AbstractString;
-    wt::Union{Void,Symbol} = nothing,
-    labels::Union{Void,Labels}=nothing,
+    wt::Union{Nothing,Symbol} = nothing,
+    labels::Union{Nothing,Label}=nothing,
     row = 0,
     col = 0)
 
@@ -1081,7 +1081,7 @@ function univariatexls(df::DataFrame,
     end
 end
 function univariatexls(df::DataFrame,contvars::Vector{Symbol},wbook::AbstractString,wsheet::AbstractString;
-    wt::Union{Void,Symbol} = nothing,labels::Union{Void,Labels}=nothing, row = 0, col = 0)
+    wt::Union{Nothing,Symbol} = nothing,labels::Union{Nothing,Label}=nothing, row = 0, col = 0)
 
     xlsxwriter=pyimport("xlsxwriter")
 
