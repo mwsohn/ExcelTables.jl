@@ -89,7 +89,7 @@ function mglmxls(glmout,
     end
 
     if mtitle == nothing
-        mtitle = Vector{String}(num_models)
+        mtitle = Vector{String}(undef,num_models)
 
         # assign dependent variables
         for i=1:num_models
