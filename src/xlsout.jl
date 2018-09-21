@@ -37,14 +37,14 @@ end
 
 function nagelkerke(glmout)
     L = loglikelihood(glmout)
-    L0 = loglikelihood(glm(@formula($(glmout.mf.terms.eterms[1]) ~ 1),glmout.mf.df,Bernoulli(),LogitLink()))
+    L0 = loglikelihood(glm(@eval(@formula($(glmout.mf.terms.eterms[1]) ~ 1)),glmout.mf.df,Bernoulli(),LogitLink()))
     pow = 2/nobs(glmout)
     return (1 - exp(-pow*(L - L0))) / (1 - exp(pow*L0))
 end
 
 function macfadden(glmout)
     L = loglikelihood(glmout)
-    L0 = loglikelihood(glm(@formula($(glmout.mf.terms.eterms[1]) ~ 1),glmout.mf.df,Bernoulli(),LogitLink()))
+    L0 = loglikelihood(glm(@eval(@formula($(glmout.mf.terms.eterms[1]) ~ 1)),glmout.mf.df,Bernoulli(),LogitLink()))
     return 1 - L/L0
 end
 
