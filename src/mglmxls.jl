@@ -93,7 +93,8 @@ function mglmxls(glmout,
 
         # assign dependent variables
         for i=1:num_models
-            mtitle[i] = labels != nothing && haskey(labels.var, glmout[i].mf.terms.eterms[1]) ? varlab(labels,glmout[i].mf.terms.eterms[1]) : glmout[i].mf.terms.eterms[1]
+            ysim = glmout[i].mf.terms.eterms[1]
+            mtitle[i] = labels != nothing && haskey(labels.var, ysim) ? varlab(labels,ysim) : string(ysim)
         end
     end
 
