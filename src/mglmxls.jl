@@ -156,10 +156,10 @@ function mglmxls(glmout,
     for i = 1:nrows
     	# variable name
         # parse varname to separate variable name from value
-        if contains(covariates[i]," & ")
+        if occursin(" & ",covariates[i])
             varname[i] = covariates[i]
             vals[i] = ""
-        elseif contains(covariates[i],":")
+        elseif occursin(":",covariates[i])
             (varname[i],vals[i]) = split(covariates[i],": ")
         else
             varname[i] = covariates[i]

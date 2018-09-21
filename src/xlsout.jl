@@ -166,9 +166,9 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
     for i = 1:nrows
     	# variable name
         # parse varname to separate variable name from value
-        if contains(tdata.rownms[i],":")
+        if occursin(":",tdata.rownms[i])
             (varname[i],vals[i]) = split(tdata.rownms[i],": ")
-        elseif contains(tdata.rownms[i]," - ")
+        elseif occursin(" - ",tdata.rownms[i])
             (varname[i],vals[i]) = split(tdata.rownms[i]," - ")
         else
             varname[i] = tdata.rownms[i]
