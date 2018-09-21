@@ -1,15 +1,15 @@
-"""
-    mglmxls(glmout::Vector{DataFrames.DataFrameRegressionModel}, workbook::PyObject, worksheet::AbstractString; label_dict::Union{Nothing,Dict}=nothing,mtitle::Union{Vector,Nothing}=nothing,eform=false,ci=true, row = 0, col =0)
+labels"""
+    mglmxls(glmout::Vector{DataFrames.DataFrameRegressionModel}, workbook::PyObject, worksheet::AbstractString; labels::Union{Nothing,Dict}=nothing,mtitle::Union{Vector,Nothing}=nothing,eform=false,ci=true, row = 0, col =0)
 
 Outputs multiple GLM regression tables side by side to an excel spreadsheet.
 To use this function, `PyCall` is required with a working version python and
 a python package called `xlsxwriter` installed. If a label is found for a variable
-or a value of a variable in a `label_dict`, the label will be output. Options are:
+or a value of a variable in a `labels`, the label will be output. Options are:
 
 - `glmout`: a vector of GLM regression models
 - `workbook`: a returned value from xlsxwriter.Workbook() function (see an example below)
 - `worksheet`: a string for the worksheet name
-- `label_dict`: an option to specify a `label` dictionary (see an example below)
+- `labels`: an option to specify a `label` dictionary (see an example below)
 - `mtitle`: header label for GLM models. If not specified, the dependent variable name will be used.
 - `eform`: use `eform = true` to get exponentiated estimates, standard errors, or 95% confidence intervals
 - `ci`: use `ci = true` (default) to get 95% confidence intervals. `ci = false` will produce standard errors and Z values instead.
@@ -93,7 +93,7 @@ function mglmxls(glmout,
 
         # assign dependent variables
         for i=1:num_models
-            mtitle[i] = label_dict != nothing ? varlab[glmout[i].mf.terms.eterms[1]] : glmout[i].mf.terms.eterms[1]
+            mtitle[i] = labels != nothing ? varlab[glmout[i].mf.terms.eterms[1]] : glmout[i].mf.terms.eterms[1]
         end
     end
 
