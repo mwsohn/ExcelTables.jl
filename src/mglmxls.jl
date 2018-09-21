@@ -1,5 +1,5 @@
 """
-    mglmxls(glmout::Vector{DataFrames.DataFrameRegressionModel}, workbook::PyObject, worksheet::AbstractString; label_dict::Union{Void,Dict}=nothing,mtitle::Union{Vector,Void}=nothing,eform=false,ci=true, row = 0, col =0)
+    mglmxls(glmout::Vector{DataFrames.DataFrameRegressionModel}, workbook::PyObject, worksheet::AbstractString; label_dict::Union{Nothing,Dict}=nothing,mtitle::Union{Vector,Nothing}=nothing,eform=false,ci=true, row = 0, col =0)
 
 Outputs multiple GLM regression tables side by side to an excel spreadsheet.
 To use this function, `PyCall` is required with a working version python and
@@ -95,8 +95,8 @@ Dict{Int64,String} with 3 entries:
 function mglmxls(glmout,
     wbook::PyObject,
     wsheet::AbstractString;
-    mtitle::Union{Vector,Void} = nothing,
-    labels::Union{Void,Labels} = nothing,
+    mtitle::Union{Vector,Nothing} = nothing,
+    labels::Union{Nothing,Labels} = nothing,
     eform::Bool = false,
     ci = true,
     row = 0,
@@ -399,8 +399,8 @@ end
 function mglmxls(glmout,
     wbook::AbstractString,
     wsheet::AbstractString;
-    mtitle::Union{String,Void} = nothing,
-    labels::Union{Void,Labels} = nothing,
+    mtitle::Union{String,Nothing} = nothing,
+    labels::Union{Nothing,Labels} = nothing,
     eform::Bool = false,
     ci = true,
     row = 0,
