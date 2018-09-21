@@ -69,10 +69,9 @@ function mglmxls(glmout,
         # if (typeof(modelstr[i]) <: RegressionModel) == false
         #     error("This is not a regression model: ",i)
         # end
-
-        if ismatch(r"GLM\.GeneralizedLinearModel",modelstr[i])
-            distrib = replace(modelstr[i],r".*Distributions\.(Normal|Bernoulli|Binomial|Bernoulli|Gamma|Normal|Poisson)\{.*",s"\1")
-            linkfun = replace(modelstr[i],r".*,GLM\.(CauchitLink|CloglogLink|IdentityLink|InverseLink|LogitLink|LogLink|ProbitLink|SqrtLink)\}.*",s"\1")
+        if match(r"GeneralizedLinearModel",modelstr) != nothing
+            distrib = replace(modelstr,r".*(Normal|Bernoulli|Binomial|Bernoulli|Gamma|Normal|Poisson)\{.*",s"\1")
+            linkfun = replace(modelstr,r".*,(CauchitLink|CloglogLink|IdentityLink|InverseLink|LogitLink|LogLink|ProbitLink|SqrtLink)\}.*",s"\1")
         end
 
         otype[i] = "Estimate"
