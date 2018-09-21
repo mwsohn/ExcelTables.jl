@@ -159,8 +159,8 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
     # go through each variable and construct variable name and value label arrays
     tdata = coeftable(glmout)
     nrows = length(tdata.rownms)
-    varname = Vector{String}(nrows)
-    vals = Vector{String}(nrows)
+    varname = Vector{String}(undef,nrows)
+    vals = Vector{String}(undef,nrows)
     nlev = zeros(Int,nrows)
     #nord = zeros(Int,nrow)
     for i = 1:nrows
@@ -340,233 +340,233 @@ function glmxls(glmout,
 
     glmxls(glmout,xlsxwriter[:Workbook](wbook),wsheet,labels=labels,eform=eform,ci=ci,row=row,col=col)
 end
-
-"""
-Function created specifically to address the need for Carrie Foster's paper
-"""
-function glmxls2(glmout,wbook::PyObject,wsheet::AbstractString;
-    labels::Union{Nothing,Label} = nothing,
-    eform::Bool = false, ci = true, row = 0, col = 0)
-
-    if (typeof(glmout) <: StatsModels.RegressionModel) == false
-        error("This is not a regression model output.")
-    end
-
-    modelstr = string(typeof(glmout))
-    if match(r"GLM\.GeneralizedLinearModel",modelstr) != nothing
-        distrib = replace(modelstr,r".*Distributions\.(Normal|Bernoulli|Binomial|Bernoulli|Gamma|Normal|Poisson)\{.*",s"\1")
-        linkfun = replace(modelstr,r".*,GLM\.(CauchitLink|CloglogLink|IdentityLink|InverseLink|LogitLink|LogLink|ProbitLink|SqrtLink)\}.*",s"\1")
-    else
-        distrib = ""
-        linkfun = ""
-    end
-
-    # create a worksheet
-    t = wbook[:add_worksheet](wsheet)
-
-    # attach formats to the workbook
-    formats = attach_formats(wbook)
-
-    # starting location in the worksheet
-    r = row
-    c = col
-
-    # set column widths
-    t[:set_column](c,c,40)
-    t[:set_column](c+1,c+7,7)
-    t[:set_column](c+8,c+8,20)
-
-    # headings ---------------------------------------------------------
-    # if ci == true, Estimate (95% CI) P-Value
-    # if eform == true, Estimate is OR for logit, IRR for poisson
-    otype = "Estimate"
-    if eform == true
-        if distrib in ["Bernoulli","Binomial"] && linkfun == "LogitLink"
-            otype = "OR"
-        elseif distrib == "Binomial" && linkfun == "LogLink"
-            otype = "RR"
-        elseif distrib == "Poisson" && linkfun == "LogLink"
-            otype = "IRR"
-        else
-            otype = "exp(Est)"
-        end
-    end
-    t[:write_string](r,c,"Variable",formats[:heading])
-    t[:write_string](r,c+1,"Beta",formats[:heading])
-    t[:write_string](r,c+2,"SE",formats[:heading])
-    t[:write_string](r,c+3,"Wald",formats[:heading])
-    t[:write_string](r,c+4,"P-Value",formats[:heading])
-    t[:merge_range](r,c+5,r,c+7,string(otype," (95% CI)"),formats[:heading])
-    t[:write_string](r,c+8,"Relative Risk Value",formats[:heading])
-
-    #------------------------------------------------------------------
-    r += 1
-    c = col
-
-    # go through each variable and construct variable name and value label arrays
-    tdata = coeftable(glmout)
-    nrows = length(tdata.rownms)
-    varname = Vector{String}(nrows)
-    vals = Vector{String}(nrows)
-    nlev = zeros(Int,nrows)
-    minest = minimum(tdata.cols[1][2:end])
-    #nord = zeros(Int,nrow)
-    for i = 1:nrows
-    	# variable name
-        # parse varname to separate variable name from value
-        if contains(tdata.rownms[i],":")
-            (varname[i],vals[i]) = split(tdata.rownms[i],": ")
-        elseif contains(tdata.rownms[i]," - ")
-            (varname[i],vals[i]) = split(tdata.rownms[i]," - ")
-        else
-            varname[i] = tdata.rownms[i]
-            vals[i] = ""
-        end
-
-        # use labels if exist
-        if labels != nothing
-            if vals[i] != ""
-                valn = vals[i] == "true" ? 1 : parse(Int,vals[i])
-                vals[i] = vallab(labels,Symbol(varname[i]),valn)
-            end
-            varname[i] = varlab(labels, Symbol(varname[i]))
-        end
-    end
-    for i = 1:nrows
-        nlev[i] = countlev(varname[i],varname)
-    end
-
-    # write table
-    tconfint = confint(glmout)
-    lastvarname = ""
-    sumrs = 0.0
-
-    for i = 1:nrows
-        if otype == "OR" && varname[i] == "(Intercept)"
-            continue
-        end
-        if varname[i] != lastvarname
-            # output cell boundaries only and go to the next line
-            if nlev[i] > 1
-                t[:write_string](r,c,varname[i],formats[:heading_left])
-
-                t[:write](r,c+1,"",formats[:empty_border])
-                t[:write](r,c+2,"",formats[:empty_border])
-                t[:write](r,c+3,"",formats[:empty_border])
-                t[:write](r,c+4,"",formats[:p_fmt])
-                t[:write](r,c+5,"",formats[:empty_right])
-                t[:write](r,c+6,"",formats[:empty_both])
-                t[:write](r,c+7,"",formats[:empty_left])
-                t[:write](r,c+8,"",formats[:p_fmt])
-                r += 1
-                t[:write_string](r,c,vals[i],formats[:varname_1indent])
-
-            else
-                if vals[i] != "" && vals[i] != "Yes"
-                    t[:write_string](r,c,string(varname[i]," - ",vals[i]),formats[:heading_left])
-                else
-                    t[:write_string](r,c,varname[i],formats[:heading_left])
-                end
-            end
-        else
-            t[:write_string](r,c,vals[i],formats[:varname_1indent])
-        end
-
-    	# estimates
-        t[:write](r,c+1,tdata.cols[1][i],formats[:or_fmt])
-
-        # SE
-        t[:write](r,c+2,tdata.cols[1][i],formats[:or_fmt])
-
-        # Wald
-        t[:write](r,c+3,tdata.cols[3][i],formats[:or_fmt])
-
-        # P-Value
-        t[:write](r,c+4,tdata.cols[4][i].v < 0.001 ? "< 0.001" : tdata.cols[4][i].v ,formats[:p_fmt])
-
-        # OR
-	    t[:write](r,c+5,exp(tdata.cols[1][i]),formats[:or_fmt])
-
-    	# 95% CI Lower
-    	t[:write](r,c+6,exp(tconfint[i,1]),formats[:cilb_fmt])
-
-    	# 95% CI Upper
-    	t[:write](r,c+7,exp(tconfint[i,2]),formats[:ciub_fmt])
-
-        # Relative Risk Value
-        rs = 10 * tdata.cols[1][i] / minest
-        sumrs += rs
-    	t[:write](r,c+8,rs,formats[:n_fmt])
-
-        lastvarname = varname[i]
-
-        # update row
-        r += 1
-    end
-
-    # Write model characteristics and goodness of fit statistics
-    c = col
-
-    # N
-    t[:write](r,c,"N",formats[:model_name])
-    t[:merge_range](r,c+1,r,c+8,nobs(glmout),formats[:n_fmt_center])
-
-    # # degress of freedom
-    # r += 1
-    # t[:write](r,c,"DF",formats[:model_name])
-    # t[:merge_range](r,c+1,r,c+8,dof(glmout),formats[:n_fmt_center])
-
-    # R² or pseudo R²
-    r += 1
-    if linkfun == "LogitLink"
-        t[:write](r,c,"Pseudo R² (MacFadden)",formats[:model_name])
-        t[:merge_range](r,c+1,r,c+8,macfadden(glmout),formats[:p_fmt_center])
-        t[:write](r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])
-        t[:merge_range](r+1,c+1,r+1,c+8,nagelkerke(glmout),formats[:p_fmt_center])
-
-        # -2 log-likelihood
-        t[:write](r+2,c,"-2 Log-Likelihood",formats[:model_name])
-        t[:merge_range](r+2,c+1,r+2,c+8,deviance(glmout),formats[:p_fmt_center])
-
-        # Hosmer-Lemeshow GOF test
-        t[:write](r+3,c,"Hosmer-Lemeshow Chisq Test (df), p-value",formats[:model_name])
-        hl = hltest(glmout)
-        t[:merge_range](r+3,c+1,r+3,c+8,string(round(hl[1],4)," (",hl[2],"); p = ",round(hl[3],4)),formats[:p_fmt_center])
-
-        # ROC (c-statistic)
-        t[:write](r+4,c,"Area under the ROC Curve",formats[:model_name])
-        roc = auc(glmout.model.rr.y,predict(glmout))
-        n1 = sum(glmout.model.rr.y) # number of positive responses
-        n2 = nobs(glmout) - n1
-        q1 = roc / (2 - roc)
-        q2 = (2*roc^2) / (1 + roc)
-        rocse = sqrt((roc*(1-roc) + (n1-1)*(q1 - roc^2) + (n2 - 1)*(q2 - roc^2)) / (n1*n2))
-        t[:merge_range](r+4,c+1,r+4,c+8,string(round(roc,4)," (95% CI, ", round(roc - 1.96*rocse,4), " - ", round(roc + 1.96*rocse,4),")"),formats[:p_fmt_center])
-        #t[:merge_range](r+4,c+1,r+4,c+8,round(roc,4),formats[:p_fmt_center])
-
-        r += 5
-    else
-        t[:write](r,c,"R²",formats[:model_name])
-        t[:merge_range](r,c+1,r,c+8,r2(glmout),formats[:p_fmt_center])
-        t[:write](r+1,c,"Adjusted R²",formats[:model_name])
-        t[:merge_range](r+1,c+1,r+1,c+8,adjr2(glmout),formats[:p_fmt_center])
-
-        r += 2
-    end
-
-    # AIC & BIC
-    t[:write](r,c,"AIC",formats[:model_name])
-    t[:merge_range](r,c+1,r,c+8,aic(glmout),formats[:p_fmt_center])
-
-    r += 1
-    t[:write](r,c,"BIC",formats[:model_name])
-    t[:merge_range](r,c+1,r,c+8,bic(glmout),formats[:p_fmt_center])
-
-    r += 1
-    t[:write](r,c,"Summary Risk Score",formats[:model_name])
-    t[:merge_range](r,c+1,r,c+8,sumrs,formats[:n_fmt_center])
-end
-
+#
+# """
+# Function created specifically to address the need for Carrie Foster's paper
+# """
+# function glmxls2(glmout,wbook::PyObject,wsheet::AbstractString;
+#     labels::Union{Nothing,Label} = nothing,
+#     eform::Bool = false, ci = true, row = 0, col = 0)
+#
+#     if (typeof(glmout) <: StatsModels.RegressionModel) == false
+#         error("This is not a regression model output.")
+#     end
+#
+#     modelstr = string(typeof(glmout))
+#     if match(r"GLM\.GeneralizedLinearModel",modelstr) != nothing
+#         distrib = replace(modelstr,r".*Distributions\.(Normal|Bernoulli|Binomial|Bernoulli|Gamma|Normal|Poisson)\{.*",s"\1")
+#         linkfun = replace(modelstr,r".*,GLM\.(CauchitLink|CloglogLink|IdentityLink|InverseLink|LogitLink|LogLink|ProbitLink|SqrtLink)\}.*",s"\1")
+#     else
+#         distrib = ""
+#         linkfun = ""
+#     end
+#
+#     # create a worksheet
+#     t = wbook[:add_worksheet](wsheet)
+#
+#     # attach formats to the workbook
+#     formats = attach_formats(wbook)
+#
+#     # starting location in the worksheet
+#     r = row
+#     c = col
+#
+#     # set column widths
+#     t[:set_column](c,c,40)
+#     t[:set_column](c+1,c+7,7)
+#     t[:set_column](c+8,c+8,20)
+#
+#     # headings ---------------------------------------------------------
+#     # if ci == true, Estimate (95% CI) P-Value
+#     # if eform == true, Estimate is OR for logit, IRR for poisson
+#     otype = "Estimate"
+#     if eform == true
+#         if distrib in ["Bernoulli","Binomial"] && linkfun == "LogitLink"
+#             otype = "OR"
+#         elseif distrib == "Binomial" && linkfun == "LogLink"
+#             otype = "RR"
+#         elseif distrib == "Poisson" && linkfun == "LogLink"
+#             otype = "IRR"
+#         else
+#             otype = "exp(Est)"
+#         end
+#     end
+#     t[:write_string](r,c,"Variable",formats[:heading])
+#     t[:write_string](r,c+1,"Beta",formats[:heading])
+#     t[:write_string](r,c+2,"SE",formats[:heading])
+#     t[:write_string](r,c+3,"Wald",formats[:heading])
+#     t[:write_string](r,c+4,"P-Value",formats[:heading])
+#     t[:merge_range](r,c+5,r,c+7,string(otype," (95% CI)"),formats[:heading])
+#     t[:write_string](r,c+8,"Relative Risk Value",formats[:heading])
+#
+#     #------------------------------------------------------------------
+#     r += 1
+#     c = col
+#
+#     # go through each variable and construct variable name and value label arrays
+#     tdata = coeftable(glmout)
+#     nrows = length(tdata.rownms)
+#     varname = Vector{String}(nrows)
+#     vals = Vector{String}(nrows)
+#     nlev = zeros(Int,nrows)
+#     minest = minimum(tdata.cols[1][2:end])
+#     #nord = zeros(Int,nrow)
+#     for i = 1:nrows
+#     	# variable name
+#         # parse varname to separate variable name from value
+#         if contains(tdata.rownms[i],":")
+#             (varname[i],vals[i]) = split(tdata.rownms[i],": ")
+#         elseif contains(tdata.rownms[i]," - ")
+#             (varname[i],vals[i]) = split(tdata.rownms[i]," - ")
+#         else
+#             varname[i] = tdata.rownms[i]
+#             vals[i] = ""
+#         end
+#
+#         # use labels if exist
+#         if labels != nothing
+#             if vals[i] != ""
+#                 valn = vals[i] == "true" ? 1 : parse(Int,vals[i])
+#                 vals[i] = vallab(labels,Symbol(varname[i]),valn)
+#             end
+#             varname[i] = varlab(labels, Symbol(varname[i]))
+#         end
+#     end
+#     for i = 1:nrows
+#         nlev[i] = countlev(varname[i],varname)
+#     end
+#
+#     # write table
+#     tconfint = confint(glmout)
+#     lastvarname = ""
+#     sumrs = 0.0
+#
+#     for i = 1:nrows
+#         if otype == "OR" && varname[i] == "(Intercept)"
+#             continue
+#         end
+#         if varname[i] != lastvarname
+#             # output cell boundaries only and go to the next line
+#             if nlev[i] > 1
+#                 t[:write_string](r,c,varname[i],formats[:heading_left])
+#
+#                 t[:write](r,c+1,"",formats[:empty_border])
+#                 t[:write](r,c+2,"",formats[:empty_border])
+#                 t[:write](r,c+3,"",formats[:empty_border])
+#                 t[:write](r,c+4,"",formats[:p_fmt])
+#                 t[:write](r,c+5,"",formats[:empty_right])
+#                 t[:write](r,c+6,"",formats[:empty_both])
+#                 t[:write](r,c+7,"",formats[:empty_left])
+#                 t[:write](r,c+8,"",formats[:p_fmt])
+#                 r += 1
+#                 t[:write_string](r,c,vals[i],formats[:varname_1indent])
+#
+#             else
+#                 if vals[i] != "" && vals[i] != "Yes"
+#                     t[:write_string](r,c,string(varname[i]," - ",vals[i]),formats[:heading_left])
+#                 else
+#                     t[:write_string](r,c,varname[i],formats[:heading_left])
+#                 end
+#             end
+#         else
+#             t[:write_string](r,c,vals[i],formats[:varname_1indent])
+#         end
+#
+#     	# estimates
+#         t[:write](r,c+1,tdata.cols[1][i],formats[:or_fmt])
+#
+#         # SE
+#         t[:write](r,c+2,tdata.cols[1][i],formats[:or_fmt])
+#
+#         # Wald
+#         t[:write](r,c+3,tdata.cols[3][i],formats[:or_fmt])
+#
+#         # P-Value
+#         t[:write](r,c+4,tdata.cols[4][i].v < 0.001 ? "< 0.001" : tdata.cols[4][i].v ,formats[:p_fmt])
+#
+#         # OR
+# 	    t[:write](r,c+5,exp(tdata.cols[1][i]),formats[:or_fmt])
+#
+#     	# 95% CI Lower
+#     	t[:write](r,c+6,exp(tconfint[i,1]),formats[:cilb_fmt])
+#
+#     	# 95% CI Upper
+#     	t[:write](r,c+7,exp(tconfint[i,2]),formats[:ciub_fmt])
+#
+#         # Relative Risk Value
+#         rs = 10 * tdata.cols[1][i] / minest
+#         sumrs += rs
+#     	t[:write](r,c+8,rs,formats[:n_fmt])
+#
+#         lastvarname = varname[i]
+#
+#         # update row
+#         r += 1
+#     end
+#
+#     # Write model characteristics and goodness of fit statistics
+#     c = col
+#
+#     # N
+#     t[:write](r,c,"N",formats[:model_name])
+#     t[:merge_range](r,c+1,r,c+8,nobs(glmout),formats[:n_fmt_center])
+#
+#     # # degress of freedom
+#     # r += 1
+#     # t[:write](r,c,"DF",formats[:model_name])
+#     # t[:merge_range](r,c+1,r,c+8,dof(glmout),formats[:n_fmt_center])
+#
+#     # R² or pseudo R²
+#     r += 1
+#     if linkfun == "LogitLink"
+#         t[:write](r,c,"Pseudo R² (MacFadden)",formats[:model_name])
+#         t[:merge_range](r,c+1,r,c+8,macfadden(glmout),formats[:p_fmt_center])
+#         t[:write](r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])
+#         t[:merge_range](r+1,c+1,r+1,c+8,nagelkerke(glmout),formats[:p_fmt_center])
+#
+#         # -2 log-likelihood
+#         t[:write](r+2,c,"-2 Log-Likelihood",formats[:model_name])
+#         t[:merge_range](r+2,c+1,r+2,c+8,deviance(glmout),formats[:p_fmt_center])
+#
+#         # Hosmer-Lemeshow GOF test
+#         t[:write](r+3,c,"Hosmer-Lemeshow Chisq Test (df), p-value",formats[:model_name])
+#         hl = hltest(glmout)
+#         t[:merge_range](r+3,c+1,r+3,c+8,string(round(hl[1],4)," (",hl[2],"); p = ",round(hl[3],4)),formats[:p_fmt_center])
+#
+#         # ROC (c-statistic)
+#         t[:write](r+4,c,"Area under the ROC Curve",formats[:model_name])
+#         roc = auc(glmout.model.rr.y,predict(glmout))
+#         n1 = sum(glmout.model.rr.y) # number of positive responses
+#         n2 = nobs(glmout) - n1
+#         q1 = roc / (2 - roc)
+#         q2 = (2*roc^2) / (1 + roc)
+#         rocse = sqrt((roc*(1-roc) + (n1-1)*(q1 - roc^2) + (n2 - 1)*(q2 - roc^2)) / (n1*n2))
+#         t[:merge_range](r+4,c+1,r+4,c+8,string(round(roc,4)," (95% CI, ", round(roc - 1.96*rocse,4), " - ", round(roc + 1.96*rocse,4),")"),formats[:p_fmt_center])
+#         #t[:merge_range](r+4,c+1,r+4,c+8,round(roc,4),formats[:p_fmt_center])
+#
+#         r += 5
+#     else
+#         t[:write](r,c,"R²",formats[:model_name])
+#         t[:merge_range](r,c+1,r,c+8,r2(glmout),formats[:p_fmt_center])
+#         t[:write](r+1,c,"Adjusted R²",formats[:model_name])
+#         t[:merge_range](r+1,c+1,r+1,c+8,adjr2(glmout),formats[:p_fmt_center])
+#
+#         r += 2
+#     end
+#
+#     # AIC & BIC
+#     t[:write](r,c,"AIC",formats[:model_name])
+#     t[:merge_range](r,c+1,r,c+8,aic(glmout),formats[:p_fmt_center])
+#
+#     r += 1
+#     t[:write](r,c,"BIC",formats[:model_name])
+#     t[:merge_range](r,c+1,r,c+8,bic(glmout),formats[:p_fmt_center])
+#
+#     r += 1
+#     t[:write](r,c,"Summary Risk Score",formats[:model_name])
+#     t[:merge_range](r,c+1,r,c+8,sumrs,formats[:n_fmt_center])
+# end
+#
 
 
 """
@@ -616,56 +616,6 @@ does not need to be called before the function.
 ```jldoctest
 julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx","Bivariate",label_dict = label)
 ```
-
-### Example 3
-A `label` dictionary is a collection of dictionaries, two of which are `variable` and `value`
-dictionaries. The label dictionary can be created as follows:
-
-```jldoctest
-julia> label = Dict()
-Dict{Any,Any} with 0 entries
-
-julia> label["variable"] = Dict(
-    "age" => "Age at baseline",
-    "race" => "Race/ethnicity",
-    "male" => "Male sex",
-    "bmicat" => "Body Mass Index Category")
-Dict{String,String} with 4 entries:
-  "male"   => "Male sex"
-  "race"   => "Race/ethnicity"
-  "bmicat" => "Body Mass Index Category"
-  "age"    => "Age at baseline"
-
-julia> label["value"] = Dict()
-Dict{Any,Any} with 0 entries
-
-julia> label["value"]["race"] = Dict(
-    1 => "White",
-    2 => "Black",
-    3 => "Hispanic",
-    4 => "Other")
-Dict{Int64,String} with 4 entries:
-  4 => "Other"
-  2 => "Black"
-  3 => "Hispanic"
-  1 => "White"
-
-julia> label["value"]["bmicat"] = Dict(
-    1 => "< 25 kg/m²",
-    2 => "25 - 29.9",
-    3 => "20 or over")
-Dict{Int64,String} with 3 entries:
-  2 => "25 - 29.9"
-  3 => "20 or over"
-  1 => "< 25 kg/m²"
-
- julia> label["variable"]["male"]
- "Male sex"
-
- julia> label["value"]["bmicat"][1]
- "< 25 kg/m²"
- ```
-
 """
 function bivariatexls(df::DataFrame,
     colvar::Symbol,

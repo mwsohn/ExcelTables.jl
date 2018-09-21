@@ -29,9 +29,9 @@ julia> @pyimport xlsxwriter
 julia> wb = xlsxwriter.Workbook("test_workbook.xlsx")
 PyObject <xlsxwriter.workbook.Workbook object at 0x000000002A628E80>
 
-julia> glmxls(olsmodels,wb,"OLS1",label_dict = label)
+julia> mglmxls(olsmodels,wb,"OLS1",labels = label)
 
-julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate",label_dict = label)
+julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate",labels = label)
 
 Julia> wb[:close]()
 ```
@@ -41,56 +41,9 @@ Alternatively, one can create a spreadsheet file directly. `PyCall` or `@pyimpor
 does not need to be called before the function.
 
 ```
-julia> glmxls(olsmodels,"test_workbook.xlsx","OLS1",label_dict = label)
+julia> mglmxls(olsmodels,"test_workbook.xlsx","OLS1",labels = label)
 ```
 
-# Example 3
-A `label` dictionary is a collection of dictionaries, two of which are `variable` and `value`
-dictionaries. The label dictionary can be created as follows:
-```jldoctest
-julia> label = Dict()
-Dict{Any,Any} with 0 entries
-
-julia> label["variable"] = Dict(
-    "age" => "Age at baseline",
-    "race" => "Race/ethnicity",
-    "male" => "Male sex",
-    "bmicat" => "Body Mass Index Category")
-Dict{String,String} with 4 entries:
-  "male"   => "Male sex"
-  "race"   => "Race/ethnicity"
-  "bmicat" => "Body Mass Index Category"
-  "age"    => "Age at baseline"
-
-julia> label["value"] = Dict()
-Dict{Any,Any} with 0 entries
-
-julia> label["value"]["race"] = Dict(
-    1 => "White",
-    2 => "Black",
-    3 => "Hispanic",
-    4 => "Other")
-Dict{Int64,String} with 4 entries:
-  4 => "Other"
-  2 => "Black"
-  3 => "Hispanic"
-  1 => "White"
-
-julia> label["value"]["bmicat"] = Dict(
-    1 => "< 25 kg/m²",
-    2 => "25 - 29.9",
-    3 => "20 or over")
-Dict{Int64,String} with 3 entries:
-  2 => "25 - 29.9"
-  3 => "20 or over"
-  1 => "< 25 kg/m²"
-
- julia> label["variable"]["male"]
- "Male sex"
-
- julia> label["value"]["bmicat"][1]
- "< 25 kg/m²"
- ```
 """
 function mglmxls(glmout,
     wbook::PyObject,
@@ -104,9 +57,9 @@ function mglmxls(glmout,
 
     num_models = length(glmout)
 
-    modelstr = Vector(num_models)
-    otype = Vector(num_models)
-    linkfun = Vector(num_models)
+    modelstr = Vector(undef,num_models)
+    otype = Vector(undef,num_models)
+    linkfun = Vector(undef,num_models)
 
     for i=1:num_models
 
@@ -180,8 +133,8 @@ function mglmxls(glmout,
 
     # collate variables
     covariates = Vector{String}()
-    tdata = Vector(num_models)
-    tconfint = Vector(num_models)
+    tdata = Vector(undef,num_models)
+    tconfint = Vector(undef,num_models)
 
     for i=1:num_models
         tdata[i] = coeftable(glmout[i])
@@ -196,8 +149,8 @@ function mglmxls(glmout,
 
     # go through each variable and construct variable name and value label arrays
     nrows = length(covariates)
-    varname = Vector{String}(nrows)
-    vals = Vector{String}(nrows)
+    varname = Vector{String}(undef,nrows)
+    vals = Vector{String}(undef,nrows)
     nlev = zeros(Int,nrows)
 
     for i = 1:nrows
