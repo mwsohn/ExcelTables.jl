@@ -152,6 +152,7 @@ function mglmxls(glmout,
     varname = Vector{String}(undef,nrows)
     vals = Vector{String}(undef,nrows)
     nlev = zeros(Int,nrows)
+    npred = [dof(m) for m in glmout]
 
     for i = 1:nrows
     	# variable name
@@ -177,7 +178,7 @@ function mglmxls(glmout,
         end
     end
     for i = 1:nrows
-        nlev[i] = ExcelTables.countlev(varname[i],varname)
+        nlev[i] = countlev(varname[i],varname)
     end
 
     # write table
@@ -241,44 +242,41 @@ function mglmxls(glmout,
 
     	    # estimates
             if eform == true
-        	    t[:write](r,c+1,exp(tdata[j].cols[1][i]),formats[:or_fmt])
+        	    t[:write](r,c+1,i <= npred[j] ? exp(tdata[j].cols[1][i]) : "",formats[:or_fmt])
             else
-                t[:write](r,c+1,tdata[j].cols[1][i],formats[:or_fmt])
+                t[:write](r,c+1,i <= npred[j] ? tdata[j].cols[1][i] : "",formats[:or_fmt])
             end
 
             if ci == true
 
                 if eform == true
                 	# 95% CI Lower
-                	t[:write](r,c+2,exp(tconfint[j][i,1]),formats[:cilb_fmt])
+                	t[:write](r,c+2,i <= npred[j] ? exp(tconfint[j][i,1]) : "",formats[:cilb_fmt])
 
                 	# 95% CI Upper
-                	t[:write](r,c+3,exp(tconfint[j][i,2]),formats[:ciub_fmt])
+                	t[:write](r,c+3,i <= npred[j] ? exp(tconfint[j][i,2]) : "",formats[:ciub_fmt])
                 else
                     # 95% CI Lower
-                	t[:write](r,c+2,tconfint[j][i,1],formats[:cilb_fmt])
+                	t[:write](r,c+2,i <= npred[j] ? tconfint[j][i,1] : "",formats[:cilb_fmt])
 
                 	# 95% CI Upper
-                	t[:write](r,c+3,tconfint[j][i,2],formats[:ciub_fmt])
+                	t[:write](r,c+3,i <= npred[j] ? tconfint[j][i,2] : "",formats[:ciub_fmt])
                 end
             else
                 # SE
                 if eform == true
-            	    t[:write](r,c+2,exp(tdata[j].cols[1][i])*tdata[j].cols[2][i],formats[:or_fmt])
+            	    t[:write](r,c+2,i <= npred[j] ? exp(tdata[j].cols[1][i])*tdata[j].cols[2][i] : "",formats[:or_fmt])
                 else
-                    t[:write](r,c+2,tdata[j].cols[1][i],formats[:or_fmt])
+                    t[:write](r,c+2,i <= npred[j] ? tdata[j].cols[1][i] : "",formats[:or_fmt])
                 end
 
                 # Z value
-                t[:write](r,c+3,tdata[j].cols[3][i],formats[:or_fmt])
+                t[:write](r,c+3,i <= npred[j] ? tdata[j].cols[3][i] : "",formats[:or_fmt])
 
             end
 
             # P-Value
-	        t[:write](r,c+4,tdata[j].cols[4][i].v < 0.001 ? "< 0.001" : tdata[j].cols[4][i].v ,formats[:p_fmt])
-
-
-
+	        t[:write](r,c+4,i <= npred[j] ? (tdata[j].cols[4][i].v < 0.001 ? "< 0.001" : tdata[j].cols[4][i].v) : "" ,formats[:p_fmt])
 
             c += 4
 
