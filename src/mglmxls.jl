@@ -1,4 +1,4 @@
-labels"""
+"""
     mglmxls(glmout::Vector{DataFrames.DataFrameRegressionModel}, workbook::PyObject, worksheet::AbstractString; labels::Union{Nothing,Dict}=nothing,mtitle::Union{Vector,Nothing}=nothing,eform=false,ci=true, row = 0, col =0)
 
 Outputs multiple GLM regression tables side by side to an excel spreadsheet.
