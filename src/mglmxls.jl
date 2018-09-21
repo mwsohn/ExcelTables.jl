@@ -70,8 +70,8 @@ function mglmxls(glmout,
         #     error("This is not a regression model: ",i)
         # end
         if match(r"GeneralizedLinearModel",modelstr) != nothing
-            distrib = replace(modelstr,r".*(Normal|Bernoulli|Binomial|Bernoulli|Gamma|Normal|Poisson)\{.*",s"\1")
-            linkfun = replace(modelstr,r".*,(CauchitLink|CloglogLink|IdentityLink|InverseLink|LogitLink|LogLink|ProbitLink|SqrtLink)\}.*",s"\1")
+            distrib = replace(modelstr,r".*(Normal|Bernoulli|Binomial|Bernoulli|Gamma|Normal|Poisson)\{.*" => s"\1")
+            linkfun = replace(modelstr,r".*,(CauchitLink|CloglogLink|IdentityLink|InverseLink|LogitLink|LogLink|ProbitLink|SqrtLink)\}.*" => s"\1")
         end
 
         otype[i] = "Estimate"

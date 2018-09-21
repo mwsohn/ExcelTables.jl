@@ -105,8 +105,8 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
 
     modelstr = string(typeof(glmout))
     if match(r"GeneralizedLinearModel",modelstr) != nothing
-        distrib = replace(modelstr,r".*(Normal|Bernoulli|Binomial|Bernoulli|Gamma|Normal|Poisson)\{.*",s"\1")
-        linkfun = replace(modelstr,r".*,(CauchitLink|CloglogLink|IdentityLink|InverseLink|LogitLink|LogLink|ProbitLink|SqrtLink)\}.*",s"\1")
+        distrib = replace(modelstr,r".*(Normal|Bernoulli|Binomial|Bernoulli|Gamma|Normal|Poisson)\{.*" => s"\1")
+        linkfun = replace(modelstr,r".*,(CauchitLink|CloglogLink|IdentityLink|InverseLink|LogitLink|LogLink|ProbitLink|SqrtLink)\}.*" => s"\1")
     else
         distrib = ""
         linkfun = ""
