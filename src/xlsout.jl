@@ -297,7 +297,7 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
         # Hosmer-Lemeshow GOF test
         t[:write](r+3,c,"Hosmer-Lemeshow Chisq Test (df), p-value",formats[:model_name])
         hl = hltest(glmout)
-        t[:merge_range](r+3,c+1,r+3,c+4,string(round(hl[1],4)," (",hl[2],"); p = ",round(hl[3],4)),formats[:p_fmt_center])
+        t[:merge_range](r+3,c+1,r+3,c+4,string(round(hl[1],digits=4)," (",hl[2],"); p = ",round(hl[3],digits=4)),formats[:p_fmt_center])
 
         # ROC (c-statistic)
         t[:write](r+4,c,"Area under the ROC Curve",formats[:model_name])
@@ -307,7 +307,7 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
         q1 = roc / (2 - roc)
         q2 = (2*roc^2) / (1 + roc)
         rocse = sqrt((roc*(1-roc) + (n1-1)*(q1 - roc^2) + (n2 - 1)*(q2 - roc^2)) / (n1*n2))
-        t[:merge_range](r+4,c+1,r+4,c+4,string(round(roc,4)," (95% CI, ", round(roc - 1.96*rocse,4), " - ", round(roc + 1.96*rocse,4),")"),formats[:p_fmt_center])
+        t[:merge_range](r+4,c+1,r+4,c+4,string(round(roc,digits=4)," (95% CI, ", round(roc - 1.96*rocse,digits=4), " - ", round(roc + 1.96*rocse,digits=4),")"),formats[:p_fmt_center])
 
         r += 5
     else

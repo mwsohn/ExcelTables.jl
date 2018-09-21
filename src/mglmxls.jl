@@ -319,12 +319,12 @@ function mglmxls(glmout,
             # Hosmer-Lemeshow GOF test
             t[:write](r+3,c,"Hosmer-Lemeshow Chisq Test (df), p-value",formats[:model_name])
             hl = hltest(glmout[i])
-            t[:merge_range](r+3,c+1,r+3,c+4,string(round(hl[1],4)," (",hl[2],"); p = ",round(hl[3],4)),formats[:p_fmt_center])
+            t[:merge_range](r+3,c+1,r+3,c+4,string(round(hl[1],digits=4)," (",hl[2],"); p = ",round(hl[3],digits=4)),formats[:p_fmt_center])
 
             # ROC (c-statistic)
             t[:write](r+4,c,"Area under the ROC Curve",formats[:model_name])
             roc = auc(glmout[i].model.rr.y,predict(glmout[i]))
-            t[:merge_range](r+4,c+1,r+4,c+4,round(roc,4),formats[:p_fmt_center])
+            t[:merge_range](r+4,c+1,r+4,c+4,round(roc,digits=4),formats[:p_fmt_center])
 
             r += 5
         else
