@@ -291,7 +291,7 @@ function mglmxls(glmout,
 
         # R² or pseudo R²
         r += 1
-        if linkfun == "LogitLink"
+        if isa(linkfun[i],LogitLink)
             t[:write](r,c,"Pseudo R² (MacFadden)",formats[:model_name])
             t[:merge_range](r,c+1,r,c+4,macfadden(glmout[i]),formats[:p_fmt_center])
             t[:write](r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])

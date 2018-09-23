@@ -36,7 +36,7 @@ function hltest(glmout,q = 10)
 end
 
 function nagelkerke(glmout)
-    return StatsBase.R2(glmout,:Nagelkerke)
+    return StatsBase.r2(glmout,:Nagelkerke)
     # L = loglikelihood(glmout)
     # L0 = loglikelihood(glm(@eval(@formula($(glmout.mf.terms.eterms[1]) ~ 1)),glmout.mf.df,Bernoulli(),LogitLink()))
     # pow = 2/nobs(glmout)
@@ -44,7 +44,7 @@ function nagelkerke(glmout)
 end
 
 function macfadden(glmout)
-    return StatsBase.R2(glmout,:McFadden)
+    return StatsBase.r2(glmout,:McFadden)
     # L = loglikelihood(glmout)
     # L0 = loglikelihood(glm(@eval(@formula($(glmout.mf.terms.eterms[1]) ~ 1)),glmout.mf.df,Bernoulli(),LogitLink()))
     # return 1 - L/L0
@@ -129,9 +129,9 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
     # if eform == true, Estimate is OR for logit, IRR for poisson
     otype = "Estimate"
     if eform == true
-        otype = coeflab(distrib,linkfun)
+        otype = Stella.coeflab(distrib,linkfun)
     end
-    
+
     t[:write_string](r,c,"Variable",formats[:heading])
     if ci == true
         t[:merge_range](r,c+1,r,c+3,string(otype," (95% CI)"),formats[:heading])
@@ -275,7 +275,7 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
 
     # R² or pseudo R²
     r += 1
-    if linkfun == "LogitLink"
+    if isa(linkfun,LogitLink)
         t[:write](r,c,"Pseudo R² (MacFadden)",formats[:model_name])
         t[:merge_range](r,c+1,r,c+4,macfadden(glmout),formats[:p_fmt_center])
         t[:write](r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])
