@@ -36,16 +36,18 @@ function hltest(glmout,q = 10)
 end
 
 function nagelkerke(glmout)
-    L = loglikelihood(glmout)
-    L0 = loglikelihood(glm(@eval(@formula($(glmout.mf.terms.eterms[1]) ~ 1)),glmout.mf.df,Bernoulli(),LogitLink()))
-    pow = 2/nobs(glmout)
-    return (1 - exp(-pow*(L - L0))) / (1 - exp(pow*L0))
+    return StatsBase.R2(glmout,:Nagelkerke)
+    # L = loglikelihood(glmout)
+    # L0 = loglikelihood(glm(@eval(@formula($(glmout.mf.terms.eterms[1]) ~ 1)),glmout.mf.df,Bernoulli(),LogitLink()))
+    # pow = 2/nobs(glmout)
+    # return (1 - exp(-pow*(L - L0))) / (1 - exp(pow*L0))
 end
 
 function macfadden(glmout)
-    L = loglikelihood(glmout)
-    L0 = loglikelihood(glm(@eval(@formula($(glmout.mf.terms.eterms[1]) ~ 1)),glmout.mf.df,Bernoulli(),LogitLink()))
-    return 1 - L/L0
+    return StatsBase.R2(glmout,:McFadden)
+    # L = loglikelihood(glmout)
+    # L0 = loglikelihood(glm(@eval(@formula($(glmout.mf.terms.eterms[1]) ~ 1)),glmout.mf.df,Bernoulli(),LogitLink()))
+    # return 1 - L/L0
 end
 
 
@@ -103,13 +105,9 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
         error("This is not a regression model output.")
     end
 
-    modelstr = string(typeof(glmout))
-    if match(r"GeneralizedLinearModel",modelstr) != nothing
-        distrib = replace(modelstr,r".*(Normal|Bernoulli|Binomial|Bernoulli|Gamma|Normal|Poisson)\{.*" => s"\1")
-        linkfun = replace(modelstr,r".*,(CauchitLink|CloglogLink|IdentityLink|InverseLink|LogitLink|LogLink|ProbitLink|SqrtLink)\}.*" => s"\1")
-    else
-        distrib = ""
-        linkfun = ""
+    if isa(glmout.model,GeneralizedLinearModel)
+        distrib = glmout.model.rr.d
+        linkfun = Link(glmout.model.rr)
     end
 
     # create a worksheet
@@ -131,16 +129,9 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
     # if eform == true, Estimate is OR for logit, IRR for poisson
     otype = "Estimate"
     if eform == true
-        if distrib in ["Bernoulli","Binomial"] && linkfun == "LogitLink"
-            otype = "OR"
-        elseif distrib == "Binomial" && linkfun == "LogLink"
-            otype = "RR"
-        elseif distrib == "Poisson" && linkfun == "LogLink"
-            otype = "IRR"
-        else
-            otype = "exp(Est)"
-        end
+        otype = coeflab(distrib,linkfun)
     end
+    
     t[:write_string](r,c,"Variable",formats[:heading])
     if ci == true
         t[:merge_range](r,c+1,r,c+3,string(otype," (95% CI)"),formats[:heading])

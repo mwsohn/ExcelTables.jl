@@ -56,35 +56,21 @@ function mglmxls(glmout,
     col = 0)
 
     num_models = length(glmout)
-
-    modelstr = Vector(undef,num_models)
     otype = Vector(undef,num_models)
-    linkfun = Vector(undef,num_models)
+    linkfun = Vector{Link}(undef,num_models)
+    distrib = Vector{UnivariateDistribution}(undef,num_models)
 
     for i=1:num_models
 
-        # check if the models are GLM outputs
-        modelstr[i] = string(typeof(glmout[i]))
-
-        # if (typeof(modelstr[i]) <: RegressionModel) == false
-        #     error("This is not a regression model: ",i)
-        # end
-        if match(r"GeneralizedLinearModel",modelstr[1]) != nothing
-            distrib = replace(modelstr[1],r".*(Normal|Bernoulli|Binomial|Bernoulli|Gamma|Normal|Poisson)\{.*" => s"\1")
-            linkfun = replace(modelstr[1],r".*,(CauchitLink|CloglogLink|IdentityLink|InverseLink|LogitLink|LogLink|ProbitLink|SqrtLink)\}.*" => s"\1")
+        # assuming that all models have the same family and link function
+        if isa(glmout[i].model,GeneralizedLinearModel)
+            distrib[i] = glmout[i].model.rr.d
+            linkfun[i] = Link(glmout[i].model.rr)
         end
 
         otype[i] = "Estimate"
         if eform == true
-            if distrib in ("Bernoulli","Binomial") && linkfun == "LogitLink"
-                otype[i] = "OR"
-            elseif distrib == "Binomial" && linkfun == "LogLink"
-                otype[i] = "RR"
-            elseif distrib == "Poisson" && linkfun == "LogLink"
-                otype[i] = "IRR"
-            else
-                otype[i] = "exp(Est)"
-            end
+            otype[i] = Stella.coeflab(distrib[i],linkfun[i])
         end
     end
 
