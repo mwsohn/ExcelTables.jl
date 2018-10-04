@@ -899,8 +899,8 @@ function dfxls(df::DataFrame,
 
             if ismissing(df[j,i])
                 t[:write_string](r,c," ",formats[:n_fmt])
-            # elseif ismissing(df[j,i]) && typ[i] <: AbstractString
-            #     t[:write_string](r,c," ",formats[:text])
+            elseif typ[i] <: AbstractString && df[j,i] == ""
+                t[:write_string](r,c," ",formats[:text])
             elseif typ[i] <: Integer
                 t[:write](r,c,df[j,i],formats[:n_fmt])
             elseif typ[i] <: AbstractFloat
