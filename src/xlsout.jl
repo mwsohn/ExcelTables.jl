@@ -910,7 +910,7 @@ function dfxls(df::DataFrame,
             elseif typ[i] <: DateTime
                 t[:write](r,c,(Dates.value(df[j,i]) - Dates.value(DateTime(1900,1,1,0,0,0)))/86400,formats[:f_datetime])
             else
-                t[:write_string](r,c,df[j,i],formats[:text])
+                t[:write](r,c,df[j,i],formats[:text])
             end
 
             r += 1
