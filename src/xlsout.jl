@@ -909,8 +909,10 @@ function dfxls(df::DataFrame,
                 t[:write](r,c,Dates.value(df[j,i]) - Dates.value(Date(1900,1,1)) + 1,formats[:f_date])
             elseif typ[i] <: DateTime
                 t[:write](r,c,(Dates.value(df[j,i]) - Dates.value(DateTime(1900,1,1,0,0,0)))/86400,formats[:f_datetime])
-            else
+            elseif typ[i] <: AbstractString
                 t[:write](r,c,df[j,i],formats[:text])
+            else
+                # skip
             end
 
             r += 1
