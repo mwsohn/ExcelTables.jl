@@ -808,7 +808,7 @@ end
 
 
 """
-    dfxls(df::DataFrame,workbook::PyObject, worksheet::AbstractString; nrows = 500, start = 1, row=0, col=0)
+    dfxls(df::DataFrame, workbook::PyObject, worksheet::AbstractString; nrows = 500, start = 1, row=0, col=0)
 
  To use this function, `PyCall` is required with a working version python and
  a python package called `xlsxwriter` installed. Options are:
@@ -884,7 +884,7 @@ function dfxls(df::DataFrame,
         start = 1
         nrows = size(df,1)
     else
-        nrows = (start+nrows-1) < size(df,1) ? brows : (size(df,1)-start+1)
+        nrows = (start+nrows-1) < size(df,1) ? nrows : (size(df,1)-start+1)
     end
 
     for i = 1:size(df,2)
@@ -906,7 +906,7 @@ function dfxls(df::DataFrame,
             elseif typ[i] <: AbstractFloat
                 t[:write](r,c,df[j,i],formats[:f_fmt])
             else
-                t[:write](r,c,df[j,i],formats[:text])
+                t[:write_string](r,c,df[j,i],formats[:text])
             end
 
             r += 1
