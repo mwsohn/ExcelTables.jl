@@ -83,6 +83,24 @@ format_defs[:n_fmt_left_parens] = Dict(
 	"right" => true, "bottom" => true, "top" => true
 )
 
+format_defs[:f_date] = Dict(
+	"num_format" => "mm/dd/yyyy",
+	"font" => "Arial",
+	"size" => 9,
+	"valign" => "vcenter",
+	"align" => "right",
+	"border" => true
+)
+
+format_defs[:f_datetime] = Dict(
+	"num_format" => "mm/dd/yyyy hh:mm:ss",
+	"font" => "Arial",
+	"size" => 9,
+	"valign" => "vcenter",
+	"align" => "right",
+	"border" => true
+)
+
 format_defs[:f_fmt_right] = Dict(
 	"num_format" => "#,##0.00",
 	"font" => "Arial",
