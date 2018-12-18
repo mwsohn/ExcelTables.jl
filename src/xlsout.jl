@@ -396,9 +396,9 @@ function bivariatexls(df::DataFrame,
     # check data
 
     # colvar has to be a CategoricalArray and must have 2 or more categories
-    if isa(df[colvar], CategoricalArray) == false || length(levels(df[colvar])) < 2
-        error("`",colvar,"` is not a CategoricalArray or does not have two or more levels")
-    end
+    #if isa(df[colvar], CategoricalArray) == false || length(levels(df[colvar])) < 2
+    #    error("`",colvar,"` is not a CategoricalArray or does not have two or more levels")
+    #end
 
     # create a worksheet
     t = wbook[:add_worksheet](wsheet)
