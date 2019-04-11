@@ -85,7 +85,7 @@ function mglmxls(glmout,
     end
 
     # create a worksheet
-    t = wbook[:add_worksheet(wsheet)
+    t = wbook.add_worksheet(wsheet)
 
     # attach formats to the workbook
     formats = ExcelTables.attach_formats(wbook)
