@@ -363,7 +363,7 @@ format_defs[:empty_both] = Dict(
 function attach_formats(workbook;formats::Dict = format_defs)
 	newfmts = Dict()
 	for key in keys(formats)
-		newfmts[key] = workbook[:add_format](formats[key])
+		newfmts[key] = workbook.add_format(formats[key])
 	end
 	return newfmts
 end

@@ -114,7 +114,7 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
     t = wbook.add_worksheet(wsheet)
 
     # attach formats to the workbook
-    formats = attach_formats(wbook)
+    formats = ExcelTables.attach_formats(wbook)
 
     # starting location in the worksheet
     r = row
@@ -404,7 +404,7 @@ function bivariatexls(df::DataFrame,
     t = wbook.add_worksheet(wsheet)
 
     # attach formats to the workbook
-    formats = attach_formats(wbook)
+    formats = ExcelTables.attach_formats(wbook)
 
     # starting row and column
     r = row
@@ -718,7 +718,7 @@ function univariatexls(df::DataFrame,
     t = wbook.add_worksheet(wsheet)
 
     # attach formats to the workbook
-    formats = attach_formats(wbook)
+    formats = ExcelTables.attach_formats(wbook)
 
     # starting row and column
     r = row
@@ -863,7 +863,7 @@ function dfxls(df::DataFrame,
     t = wbook.add_worksheet(worksheet)
 
     # attach formats to the workbook
-    formats = attach_formats(wbook)
+    formats = ExcelTables.attach_formats(wbook)
 
     # starting row and column
     c = col
