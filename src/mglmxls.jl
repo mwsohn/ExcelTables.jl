@@ -33,7 +33,7 @@ julia> mglmxls(olsmodels,wb,"OLS1",labels = label)
 
 julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate",labels = label)
 
-Julia> wb[:close]()
+Julia> wb.close()
 ```
 
 # Example 2
@@ -85,7 +85,7 @@ function mglmxls(glmout,
     end
 
     # create a worksheet
-    t = wbook[:add_worksheet](wsheet)
+    t = wbook[:add_worksheet(wsheet)
 
     # attach formats to the workbook
     formats = ExcelTables.attach_formats(wbook)
@@ -95,20 +95,20 @@ function mglmxls(glmout,
     c = col
 
     # set column widths
-    t[:set_column](c,c,40)
-    t[:set_column](c+1,c+4*num_models,7)
+    t.set_column(c,c,40)
+    t.set_column(c+1,c+4*num_models,7)
 
-    t[:merge_range](r,c,r+1,c,"Variable",formats[:heading])
+    t.merge_range(r,c,r+1,c,"Variable",formats[:heading])
     for i=1:num_models
         if ci == true
-            t[:merge_range](r,c+1,r,c+4,mtitle[i],formats[:heading])
-            t[:merge_range](r+1,c+1,r+1,c+3,string(otype[i]," (95% CI)"),formats[:heading])
-            t[:write_string](r+1,c+4,"P-Value",formats[:heading])
+            t.merge_range(r,c+1,r,c+4,mtitle[i],formats[:heading])
+            t.merge_range(r+1,c+1,r+1,c+3,string(otype[i]," (95% CI)"),formats[:heading])
+            t.write_string(r+1,c+4,"P-Value",formats[:heading])
         else
-            t[:write_string](r,c+1,otype[i],formats[:heading])
-            t[:write_string](r,c+2,"SE",formats[:heading])
-            t[:write_string](r,c+3,"Z Value",formats[:heading])
-            t[:write_string](r,c+4,"P-Value",formats[:heading])
+            t.write_string(r,c+1,otype[i],formats[:heading])
+            t.write_string(r,c+2,"SE",formats[:heading])
+            t.write_string(r,c+3,"Z Value",formats[:heading])
+            t.write_string(r,c+4,"P-Value",formats[:heading])
         end
         c += 4
     end
@@ -176,35 +176,35 @@ function mglmxls(glmout,
             if nlev[i] > 1
 
                 # variable name
-                t[:write_string](r,c,varname[i],formats[:model_name])
+                t.write_string(r,c,varname[i],formats[:model_name])
 
                 for k = 1:num_models
                     if ci == true
-                        t[:write](r,c+1,"",formats[:empty_right])
-                        t[:write](r,c+2,"",formats[:empty_both])
-                        t[:write](r,c+3,"",formats[:empty_left])
-                        t[:write](r,c+4,"",formats[:p_fmt])
+                        t.write(r,c+1,"",formats[:empty_right])
+                        t.write(r,c+2,"",formats[:empty_both])
+                        t.write(r,c+3,"",formats[:empty_left])
+                        t.write(r,c+4,"",formats[:p_fmt])
                     else
-                        t[:write](r,c+1,"",formats[:empty_border])
-                        t[:write](r,c+2,"",formats[:empty_border])
-                        t[:write](r,c+3,"",formats[:empty_border])
-                        t[:write](r,c+4,"",formats[:p_fmt])
+                        t.write(r,c+1,"",formats[:empty_border])
+                        t.write(r,c+2,"",formats[:empty_border])
+                        t.write(r,c+3,"",formats[:empty_border])
+                        t.write(r,c+4,"",formats[:p_fmt])
                     end
                     c += 4
                 end
                 c = col
                 r += 1
-                t[:write_string](r,c,vals[i],formats[:varname_1indent])
+                t.write_string(r,c,vals[i],formats[:varname_1indent])
 
             else
                 if vals[i] != "" && vals[i] != "Yes"
-                    t[:write_string](r,c,string(varname[i],": ",vals[i]),formats[:model_name])
+                    t.write_string(r,c,string(varname[i],": ",vals[i]),formats[:model_name])
                 else
-                    t[:write_string](r,c,varname[i],formats[:model_name])
+                    t.write_string(r,c,varname[i],formats[:model_name])
                 end
             end
         else
-            t[:write_string](r,c,vals[i],formats[:varname_1indent])
+            t.write_string(r,c,vals[i],formats[:varname_1indent])
         end
 
         for j=1:num_models
@@ -216,10 +216,10 @@ function mglmxls(glmout,
                 # this variable is not in the model
                 # print empty cells and then move onto the next model
 
-                t[:write_string](r,c+1,"",formats[:or_fmt])
-                t[:write_string](r,c+2,"",formats[:cilb_fmt])
-                t[:write_string](r,c+3,"",formats[:ciub_fmt])
-                t[:write_string](r,c+4,"",formats[:p_fmt])
+                t.write_string(r,c+1,"",formats[:or_fmt])
+                t.write_string(r,c+2,"",formats[:cilb_fmt])
+                t.write_string(r,c+3,"",formats[:ciub_fmt])
+                t.write_string(r,c+4,"",formats[:p_fmt])
 
                 c += 4
                 continue
@@ -228,41 +228,41 @@ function mglmxls(glmout,
 
     	    # estimates
             if eform == true
-        	    t[:write](r,c+1,i <= npred[j] ? exp(tdata[j].cols[1][i]) : "",formats[:or_fmt])
+        	    t.write(r,c+1,i <= npred[j] ? exp(tdata[j].cols[1][i]) : "",formats[:or_fmt])
             else
-                t[:write](r,c+1,i <= npred[j] ? tdata[j].cols[1][i] : "",formats[:or_fmt])
+                t.write(r,c+1,i <= npred[j] ? tdata[j].cols[1][i] : "",formats[:or_fmt])
             end
 
             if ci == true
 
                 if eform == true
                 	# 95% CI Lower
-                	t[:write](r,c+2,i <= npred[j] ? exp(tconfint[j][i,1]) : "",formats[:cilb_fmt])
+                	t.write(r,c+2,i <= npred[j] ? exp(tconfint[j][i,1]) : "",formats[:cilb_fmt])
 
                 	# 95% CI Upper
-                	t[:write](r,c+3,i <= npred[j] ? exp(tconfint[j][i,2]) : "",formats[:ciub_fmt])
+                	t.write(r,c+3,i <= npred[j] ? exp(tconfint[j][i,2]) : "",formats[:ciub_fmt])
                 else
                     # 95% CI Lower
-                	t[:write](r,c+2,i <= npred[j] ? tconfint[j][i,1] : "",formats[:cilb_fmt])
+                	t.write(r,c+2,i <= npred[j] ? tconfint[j][i,1] : "",formats[:cilb_fmt])
 
                 	# 95% CI Upper
-                	t[:write](r,c+3,i <= npred[j] ? tconfint[j][i,2] : "",formats[:ciub_fmt])
+                	t.write(r,c+3,i <= npred[j] ? tconfint[j][i,2] : "",formats[:ciub_fmt])
                 end
             else
                 # SE
                 if eform == true
-            	    t[:write](r,c+2,i <= npred[j] ? exp(tdata[j].cols[1][i])*tdata[j].cols[2][i] : "",formats[:or_fmt])
+            	    t.write(r,c+2,i <= npred[j] ? exp(tdata[j].cols[1][i])*tdata[j].cols[2][i] : "",formats[:or_fmt])
                 else
-                    t[:write](r,c+2,i <= npred[j] ? tdata[j].cols[1][i] : "",formats[:or_fmt])
+                    t.write(r,c+2,i <= npred[j] ? tdata[j].cols[1][i] : "",formats[:or_fmt])
                 end
 
                 # Z value
-                t[:write](r,c+3,i <= npred[j] ? tdata[j].cols[3][i] : "",formats[:or_fmt])
+                t.write(r,c+3,i <= npred[j] ? tdata[j].cols[3][i] : "",formats[:or_fmt])
 
             end
 
             # P-Value
-	        t[:write](r,c+4,i <= npred[j] ? (tdata[j].cols[4][i].v < 0.001 ? "< 0.001" : tdata[j].cols[4][i].v) : "" ,formats[:p_fmt])
+	        t.write(r,c+4,i <= npred[j] ? (tdata[j].cols[4][i].v < 0.001 ? "< 0.001" : tdata[j].cols[4][i].v) : "" ,formats[:p_fmt])
 
             c += 4
 
@@ -281,53 +281,53 @@ function mglmxls(glmout,
     for i=1:num_models
 
         # N
-        t[:write](r,c,"N",formats[:model_name])
-        t[:merge_range](r,c+1,r,c+4,nobs(glmout[i]),formats[:n_fmt_center])
+        t.write(r,c,"N",formats[:model_name])
+        t.merge_range(r,c+1,r,c+4,nobs(glmout[i]),formats[:n_fmt_center])
 
         # degress of freedom
         r += 1
-        t[:write](r,c,"DF",formats[:model_name])
-        t[:merge_range](r,c+1,r,c+4,dof(glmout[i]),formats[:n_fmt_center])
+        t.write(r,c,"DF",formats[:model_name])
+        t.merge_range(r,c+1,r,c+4,dof(glmout[i]),formats[:n_fmt_center])
 
         # R² or pseudo R²
         r += 1
         if isa(linkfun[i],LogitLink)
-            t[:write](r,c,"Pseudo R² (MacFadden)",formats[:model_name])
-            t[:merge_range](r,c+1,r,c+4,macfadden(glmout[i]),formats[:p_fmt_center])
-            t[:write](r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])
-            t[:merge_range](r+1,c+1,r+1,c+4,nagelkerke(glmout[i]),formats[:p_fmt_center])
+            t.write(r,c,"Pseudo R² (MacFadden)",formats[:model_name])
+            t.merge_range(r,c+1,r,c+4,macfadden(glmout[i]),formats[:p_fmt_center])
+            t.write(r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])
+            t.merge_range(r+1,c+1,r+1,c+4,nagelkerke(glmout[i]),formats[:p_fmt_center])
 
             # -2 log-likelihood
-            t[:write](r+2,c,"-2 Log-Likelihood",formats[:model_name])
-            t[:merge_range](r+2,c+1,r+2,c+4,deviance(glmout[i]),formats[:p_fmt_center])
+            t.write(r+2,c,"-2 Log-Likelihood",formats[:model_name])
+            t.merge_range(r+2,c+1,r+2,c+4,deviance(glmout[i]),formats[:p_fmt_center])
 
             # Hosmer-Lemeshow GOF test
-            t[:write](r+3,c,"Hosmer-Lemeshow Chisq Test (df), p-value",formats[:model_name])
+            t.write(r+3,c,"Hosmer-Lemeshow Chisq Test (df), p-value",formats[:model_name])
             hl = hltest(glmout[i])
-            t[:merge_range](r+3,c+1,r+3,c+4,string(round(hl[1],digits=4)," (",hl[2],"); p = ",round(hl[3],digits=4)),formats[:p_fmt_center])
+            t.merge_range(r+3,c+1,r+3,c+4,string(round(hl[1],digits=4)," (",hl[2],"); p = ",round(hl[3],digits=4)),formats[:p_fmt_center])
 
             # ROC (c-statistic)
-            t[:write](r+4,c,"Area under the ROC Curve",formats[:model_name])
+            t.write(r+4,c,"Area under the ROC Curve",formats[:model_name])
             roc = auc(glmout[i].model.rr.y,predict(glmout[i]))
-            t[:merge_range](r+4,c+1,r+4,c+4,round(roc,digits=4),formats[:p_fmt_center])
+            t.merge_range(r+4,c+1,r+4,c+4,round(roc,digits=4),formats[:p_fmt_center])
 
             r += 5
         else
-            t[:write](r,c,"R²",formats[:model_name])
-            t[:merge_range](r,c+1,r,c+4,r2(glmout[i]),formats[:p_fmt_center])
-            t[:write](r+1,c,"Adjusted R²",formats[:model_name])
-            t[:merge_range](r+1,c+1,r+1,c+4,adjr2(glmout[i]),formats[:p_fmt_center])
+            t.write(r,c,"R²",formats[:model_name])
+            t.merge_range(r,c+1,r,c+4,r2(glmout[i]),formats[:p_fmt_center])
+            t.write(r+1,c,"Adjusted R²",formats[:model_name])
+            t.merge_range(r+1,c+1,r+1,c+4,adjr2(glmout[i]),formats[:p_fmt_center])
 
             r += 2
         end
 
         # AIC & BIC
-        t[:write](r,c,"AIC",formats[:model_name])
-        t[:merge_range](r,c+1,r,c+4,aic(glmout[i]),formats[:p_fmt_center])
+        t.write(r,c,"AIC",formats[:model_name])
+        t.merge_range(r,c+1,r,c+4,aic(glmout[i]),formats[:p_fmt_center])
 
         r += 1
-        t[:write](r,c,"BIC",formats[:model_name])
-        t[:merge_range](r,c+1,r,c+4,bic(glmout[i]),formats[:p_fmt_center])
+        t.write(r,c,"BIC",formats[:model_name])
+        t.merge_range(r,c+1,r,c+4,bic(glmout[i]),formats[:p_fmt_center])
 
         r = row2
         c += 4
@@ -345,5 +345,5 @@ function mglmxls(glmout,
 
     xlsxwriter = pyimport("xlsxwriter")
 
-    mglmxls(glmout,xlsxwriter[:Workbook](wbook),wsheet,labels=labels,mtitle=mtitle,eform=eform,ci=ci,row=row,col=col)
+    mglmxls(glmout,xlsxwriter.Workbook(wbook),wsheet,labels=labels,mtitle=mtitle,eform=eform,ci=ci,row=row,col=col)
 end
