@@ -293,9 +293,9 @@ function mglmxls(glmout,
         r += 1
         if isa(linkfun[i],LogitLink)
             t.write(r,c,"Pseudo R² (MacFadden)",formats[:model_name])
-            t.merge_range(r,c+1,r,c+4,macfadden(glmout[i]),formats[:p_fmt_center])
+            t.merge_range(r,c+1,r,c+4,ExcelTables.macfadden(glmout[i]),formats[:p_fmt_center])
             t.write(r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])
-            t.merge_range(r+1,c+1,r+1,c+4,nagelkerke(glmout[i]),formats[:p_fmt_center])
+            t.merge_range(r+1,c+1,r+1,c+4,ExcelTables.nagelkerke(glmout[i]),formats[:p_fmt_center])
 
             # -2 log-likelihood
             t.write(r+2,c,"-2 Log-Likelihood",formats[:model_name])
