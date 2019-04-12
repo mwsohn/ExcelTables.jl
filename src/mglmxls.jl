@@ -303,7 +303,7 @@ function mglmxls(glmout,
 
             # Hosmer-Lemeshow GOF test
             t.write(r+3,c,"Hosmer-Lemeshow Chisq Test (df), p-value",formats[:model_name])
-            hl = hltest(glmout[i])
+            hl = ExcelTables.hltest(glmout[i])
             t.merge_range(r+3,c+1,r+3,c+4,string(round(hl[1],digits=4)," (",hl[2],"); p = ",round(hl[3],digits=4)),formats[:p_fmt_center])
 
             # ROC (c-statistic)
