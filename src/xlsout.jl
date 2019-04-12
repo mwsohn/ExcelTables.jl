@@ -422,7 +422,7 @@ function bivariatexls(df::DataFrame,
     end
     nlev = length(collev.array)
     colnms = names(collev,1)
-    coltot = sum(collev.array,1)
+    coltot = sum(collev.array,dims=1)
 
     # set column widths
     t.set_column(c,c,40)
@@ -514,8 +514,8 @@ function bivariatexls(df::DataFrame,
                 x = freqtable(df3,varname,colvar,skipmissing=true,weights=df3[wt])
             end
             rowval = names(x,1)
-            rowtot = sum(x.array,2)
-            coltot = sum(x.array,1)
+            rowtot = sum(x.array,dims=2)
+            coltot = sum(x.array,dims=1)
 
             # variable name
             # if there only two levels and one of the values is 1 or true
