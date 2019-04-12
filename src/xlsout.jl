@@ -1,4 +1,4 @@
-###########################################################################
+labels###########################################################################
 #
 # This file contains following functions
 #   glmxls - GLM regression models
@@ -52,17 +52,17 @@ end
 
 
 """
-    glmxls(glmout::DataFrames.DataFrameRegressionModel, workbook::PyObject, worksheet::AbstractString; label_dict::Union{Nothing,Dict}=nothing,eform=false,ci=true, row = 0, col =0)
+    glmxls(glmout::DataFrames.DataFrameRegressionModel, workbook::PyObject, worksheet::AbstractString; labels::Union{Nothing,Label}=nothing,eform=false,ci=true, row = 0, col =0)
 
 Outputs a GLM regression table to an excel spreadsheet.
 To use this function, `PyCall` is required with a working version python and
 a python package called `xlsxwriter` installed. If a label is found for a variable
-or a value of a variable in a `label_dict`, the label will be output. Options are:
+or a value of a variable in a `Label`, the label will be output. Options are:
 
 - `glmout`: returned value from a GLM regression model
 - `workbook`: a returned value from xlsxwriter.Workbook() function (see an example below)
 - `worksheet`: a string for the worksheet name
-- `label_dict`: an option to specify a `label` dictionary (see an example below)
+- `labels`: an option to specify a `label` dictionary (see an example below)
 - `eform`: use `eform = true` to get exponentiated estimates, standard errors, or 95% confidence intervals
 - `ci`: use `ci = true` (default) to get 95% confidence intervals. `ci = false` will produce standard errors and Z values instead.
 - `row`: specify the row of the workbook to start the output table (default = 0 (for row 1))
@@ -334,12 +334,12 @@ end
 
 
 """
-    bivariatexls(df::DataFrame,colvar::Symbol,rowvars::Vector{Symbol},workbook::PyObject,worksheet::AbstractString; label_dict::Union{Nothing,Dict}=nothing,row=0,col=0)
+    bivariatexls(df::DataFrame,colvar::Symbol,rowvars::Vector{Symbol},workbook::PyObject,worksheet::AbstractString; labels::Union{Nothing,Label}=nothing,row=0,col=0)
 
  Creates bivariate statistics and appends it in a nice tabular format to an existing workbook.
  To use this function, `PyCall` is required with a working version python and
  a python package called `xlsxwriter` installed.  If a label is found for a variable
- or a value of a variable in a `label_dict`, the label will be output. Options are:
+ or a value of a variable in a `Label`, the label will be output. Options are:
 
 - `df`: a DataFrame
 - `colvar`: a categorical variable whose values will be displayed on the columns
@@ -348,7 +348,7 @@ end
     a r x c table with cell counts and row percentages will be output with a p-value based on a chi-square test.
 - `workbook`: a returned value from xlsxwriter.Workbook() function (see an example below)
 - `worksheet`: a string for the worksheet name
-- `label_dict`: an option to specify a `label` dictionary (see an example below)
+- `labels`: an option to specify a `Label` object (see an example below)
 - `row`: specify the row of the workbook to start the output table (default = 0 (for row 1))
 - `col`: specify the column of the workbook to start the output table (default = 0 (for column A))
 - `column_percent`: set this to `false` if you want row percentages in the output table (default = true)
@@ -358,17 +358,17 @@ This example is useful when one wants to append a worksheet to an existing workb
 It is responsibility of the user to open a workbook before the function call and close it
 to actually create the physical file by close the workbook.
 
-```jldoctest
+```
 julia> using PyCall
 
-julia> @pyimport xlsxwriter
+julia> xlsxwriter = pyimport("xlsxwriter")
 
 julia> wb = xlsxwriter.Workbook("test_workbook.xlsx")
 PyObject <xlsxwriter.workbook.Workbook object at 0x000000002A628E80>
 
-julia> glmxls(ols1,wb,"OLS1",label_dict = label)
+julia> glmxls(ols1,wb,"OLS1",labels = label)
 
-julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate",label_dict = label)
+julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate",labels = label)
 
 Julia> wb.close()
 ```
@@ -377,8 +377,8 @@ Julia> wb.close()
 Alternatively, one can create a spreadsheet file directly. `PyCall` or `@pyimport`
 does not need to be called before the function.
 
-```jldoctest
-julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx","Bivariate",label_dict = label)
+```
+julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx","Bivariate",labels = label)
 ```
 """
 function bivariatexls(df::DataFrame,
@@ -435,10 +435,8 @@ function bivariatexls(df::DataFrame,
 
     # 1st row = variable name
     colvname = String(colvar)
-    if label_dict != nothing
-        if haskey(varlab,colvar)
-            colvname = varlab[colvar]
-        end
+    if labels != nothing
+        colvname = varlab(labels,colvar)
     end
     t.merge_range(r,c+1,r,c+(nlev+1)*2+1,colvname,formats[:heading])
 
@@ -501,10 +499,8 @@ function bivariatexls(df::DataFrame,
 
         # print the variable name
         vars = string(varname)
-        if label_dict != nothing
-            if haskey(varlab,varname) && varlab[varname] != ""
-                vars = varlab[varname]
-            end
+        if labels != nothing
+            vars = varlab(labels,varname)
         end
 
         # determine if varname is categorical or continuous
@@ -564,11 +560,8 @@ function bivariatexls(df::DataFrame,
                     # row value
                     vals = string(rowval[i])
 
-                    if label_dict != nothing && haskey(label_dict["label"],varname)
-                        lblname = label_dict["label"][varname]
-                        if haskey(vallab, lblname) && haskey(vallab[lblname],rowval[i]) && vallab[lblname][rowval[i]] != ""
-                            vals = vallab[lblname][rowval[i]]
-                        end
+                    if labels != nothing
+                        vals = vallab(labels,varname,rowval[i])
                     end
                     t.write_string(r,c,vals,formats[:varname_1indent])
 
@@ -658,19 +651,19 @@ end
 
 
 """
-    univariatexls(df::DataFrame,contvars::Vector{Symbol},workbook::PyObject,worksheet::AbstractString; label_dict::Union{Nothing,Dict}=nothing,row=0,col=0)
+    univariatexls(df::DataFrame,contvars::Vector{Symbol},workbook::PyObject,worksheet::AbstractString; labels::Union{Nothing,Label}=nothing,row=0,col=0)
 
 Creates univariate statistics for a vector of continuous variable and
 appends it to an existing workbook.
 To use this function, `PyCall` is required with a working version python and
 a python package called `xlsxwriter` installed.  If a label is found for a variable
-in a `label_dict`, the label will be output. Options are:
+in a `Label` object, the label will be output. Options are:
 
 - `df`: a DataFrame
 - `contvars`: a vector of continuous variables
 - `workbook`: a returned value from xlsxwriter.Workbook() function (see an example below)
 - `worksheet`: a string for the worksheet name
-- `label_dict`: an option to specify a `label` dictionary (see an example below)
+- `labels`: an option to specify a `label` dictionary (see an example below)
 - `row`: specify the row of the workbook to start the output table (default = 0 (for row 1))
 - `col`: specify the column of the workbook to start the output table (default = 0 (for column A))
 
@@ -687,11 +680,11 @@ julia> @pyimport xlsxwriter
 julia> wb = xlsxwriter.Workbook("test_workbook.xlsx")
 PyObject <xlsxwriter.workbook.Workbook object at 0x000000002A628E80>
 
-julia> glmxls(ols1,wb,"OLS1",label_dict = label)
+julia> glmxls(ols1,wb,"OLS1",labels = label)
 
-julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate",label_dict = label)
+julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate",labels = label)
 
-julia> univariatexls(df,[:age,:income_amt,:bmi],wb,"Univariate",label_dict = label)
+julia> univariatexls(df,[:age,:income_amt,:bmi],wb,"Univariate",labels = label)
 
 Julia> wb.close()
 ```
@@ -701,7 +694,7 @@ Alternatively, one can create a spreadsheet file directly. `PyCall` or `@pyimpor
 does not need to be called before the function.
 
 ```jldoctest
-julia> univariatexls(df,[:age,:income_amt,:bmi],"test_workbook.xlsx","Bivariate",label_dict = label)
+julia> univariatexls(df,[:age,:income_amt,:bmi],"test_workbook.xlsx","Bivariate",labels = label)
 ```
 
 """
@@ -829,16 +822,16 @@ to actually create the physical file by close the workbook.
 ```
 julia> using PyCall
 
-julia> @pyimport xlsxwriter
+julia> xlsxwriter = pyimport("xlsxwriter")
 
 julia> wb = xlsxwriter.Workbook("test_workbook.xlsx")
 PyObject <xlsxwriter.workbook.Workbook object at 0x000000002A628E80>
 
-julia> glmxls(ols1,wb,"OLS1",label_dict = label)
+julia> glmxls(ols1,wb,"OLS1",labels = label)
 
-julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate",label_dict = label)
+julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate",labels = label)
 
-julia> univariatexls(df,[:age,:income_amt,:bmi],wb,"Univariate",label_dict = label)
+julia> univariatexls(df,[:age,:income_amt,:bmi],wb,"Univariate",labels = label)
 
 julia> dfxls(df,wb,"dataframe",nrows = 0)
 
