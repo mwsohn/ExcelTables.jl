@@ -526,7 +526,7 @@ function bivariatexls(df::DataFrame,
             t.write_string(r,c,vars,formats[:model_name])
 
             # two levels with [0,1] or [false,true]
-            if length(rowval) == 2 && rowval in ([0,1],[false,true],["No","Yes"])
+            if length(rowval) <= 2 && rowval in (0,1,false,true,"No","Yes",[0,1],[false,true],["No","Yes"])
 
                 # row total
                 t.write(r,c+1,rowtot[2],formats[:n_fmt_right])
