@@ -526,18 +526,19 @@ function bivariatexls(df::DataFrame,
             t.write_string(r,c,vars,formats[:model_name])
 
             # two levels with [0,1] or [false,true]
-            if length(rowval) <= 2 && rowval in ([0],[1],[false],[true],["No"],["Yes"],[0,1],[false,true],["No","Yes"])
+            if length(rowval) <= 2 && rowval in ([1],[true],["Yes"],[0,1],[false,true],["No","Yes"])
 
+                nrow = length(rowval) 
                 # row total
-                t.write(r,c+1,rowtot[2],formats[:n_fmt_right])
-                t.write(r,c+2,rowtot[2]/tot,formats[:pct_fmt_parens])
+                t.write(r,c+1,rowtot[nrow],formats[:n_fmt_right])
+                t.write(r,c+2,rowtot[nrow]/tot,formats[:pct_fmt_parens])
 
                 for j = 1:nlev
-                    t.write(r,c+j*2+1,x.array[2,j],formats[:n_fmt_right])
+                    t.write(r,c+j*2+1,x.array[nrow,j],formats[:n_fmt_right])
                     if column_percent
-                        t.write(r,c+j*2+2, coltot[j] > 0 ? x.array[2,j]/coltot[j] : "",formats[:pct_fmt_parens])
+                        t.write(r,c+j*2+2, coltot[j] > 0 ? x.array[nrow,j]/coltot[j] : "",formats[:pct_fmt_parens])
                     elseif rowtot[2] > 0
-                        t.write(r,c+j*2+2, rowtot[2] > 0 ? x.array[2,j]/rowtot[2] : "",formats[:pct_fmt_parens])
+                        t.write(r,c+j*2+2, rowtot[nrow] > 0 ? x.array[nrow,j]/rowtot[nrow] : "",formats[:pct_fmt_parens])
                     end
                 end
                 pval = pvalue(ChisqTest(x.array))
