@@ -228,7 +228,7 @@ function mglmxls(glmout,
 
     	    # estimates
             if eform == true
-        	    t.write(r,c+1,i <= npred[j] ? exp(tdata[j].cols[1][i]) : "",formats[:or_fmt])
+        	t.write(r,c+1,i <= npred[j] ? exp(tdata[j].cols[1][i]) : "",formats[:or_fmt])
             else
                 t.write(r,c+1,i <= npred[j] ? tdata[j].cols[1][i] : "",formats[:or_fmt])
             end
@@ -262,7 +262,7 @@ function mglmxls(glmout,
             end
 
             # P-Value
-	        t.write(r,c+4,i <= npred[j] ? (tdata[j].cols[4][i].v < 0.001 ? "< 0.001" : tdata[j].cols[4][i].v) : "" ,formats[:p_fmt])
+	        t.write(r,c+4,i <= npred[j] ? (tdata[j].cols[4][i] < 0.001 ? "< 0.001" : tdata[j].cols[4][i]) : "" ,formats[:p_fmt])
 
             c += 4
 
