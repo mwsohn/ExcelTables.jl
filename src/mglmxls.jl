@@ -291,6 +291,14 @@ function mglmxls(glmout,
 
         # R² or pseudo R²
         r += 1
+        if isa(glmout[i].mode,LinearModel)
+            t.write(r,c,"R²",formats[:model_name])
+            t.merge_range(r,c+1,r,c+4,r2(glmout[i]),formats[:p_fmt_center])
+            t.write(r+1,c,"Adjusted R²",formats[:model_name])
+            t.merge_range(r+1,c+1,r+1,c+4,adjr2(glmout[i]),formats[:p_fmt_center])
+        
+            r += 2
+        end
         # if isa(linkfun[i],LogitLink)
         #     # t.write(r,c,"Pseudo R² (MacFadden)",formats[:model_name])
         #     # t.merge_range(r,c+1,r,c+4,macfadden(glmout[i]),formats[:p_fmt_center])
@@ -312,14 +320,6 @@ function mglmxls(glmout,
         #     # t.merge_range(r+4,c+1,r+4,c+4,round(roc,digits=4),formats[:p_fmt_center])
         #     #
         #     # r += 5
-        # else
-        #     t.write(r,c,"R²",formats[:model_name])
-        #     t.merge_range(r,c+1,r,c+4,r2(glmout[i]),formats[:p_fmt_center])
-        #     t.write(r+1,c,"Adjusted R²",formats[:model_name])
-        #     t.merge_range(r+1,c+1,r+1,c+4,adjr2(glmout[i]),formats[:p_fmt_center])
-        #
-        #     r += 2
-        # end
 
         # AIC & BIC
         t.write(r,c,"AIC",formats[:model_name])
