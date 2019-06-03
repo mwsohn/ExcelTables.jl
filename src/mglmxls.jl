@@ -291,7 +291,7 @@ function mglmxls(glmout,
 
         # R² or pseudo R²
         r += 1
-        if isa(glmout[i].mode,LinearModel)
+        if isa(glmout[i].model,LinearModel)
             t.write(r,c,"R²",formats[:model_name])
             t.merge_range(r,c+1,r,c+4,r2(glmout[i]),formats[:p_fmt_center])
             t.write(r+1,c,"Adjusted R²",formats[:model_name])
