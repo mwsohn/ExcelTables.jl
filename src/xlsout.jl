@@ -411,7 +411,7 @@ function bivariatexls(df::DataFrame,
     c = col
 
     # drop NAs in colvar
-    df2 = df[completecases(df[[colvar]]),:]
+    df2 = df[completecases(df[!,[colvar]]),:]
 
     # number of columns
     # column values
@@ -504,7 +504,7 @@ function bivariatexls(df::DataFrame,
         end
 
         # determine if varname is categorical or continuous
-        if isa(df2[varname], CategoricalArray) || eltype(df2[varname]) == String
+        if isa(df2[!,varname], CategoricalArray) || eltype(df2[!,varname]) == String
 
             # categorial
             df3=df2[completecases(df2[:,[varname]]),[varname,colvar]]
