@@ -214,7 +214,7 @@ function mglmxls(glmout,
             # find the index number for each coeftable row
             ri = findfirst(x->x == covariates[i],tdata[j].rownms)
 
-            if ri == 0
+            if ri == nothing
                 # this variable is not in the model
                 # print empty cells and then move onto the next model
 
