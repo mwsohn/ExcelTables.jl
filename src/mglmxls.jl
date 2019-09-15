@@ -57,7 +57,7 @@ function mglmxls(glmout,
 
     num_models = length(glmout)
     otype = Vector(undef,num_models)
-    if isa(glmout[i].model,GeneralizedLinearModel)
+    if isa(glmout[1].model,GeneralizedLinearModel)
 	linkfun = Vector{Link}(undef,num_models)
     	distrib = Vector{UnivariateDistribution}(undef,num_models)
     end
