@@ -228,41 +228,41 @@ function mglmxls(glmout,
 
     	    # estimates
             if eform == true
-        	t.write(r,c+1,i <= npred[j] ? exp(tdata[j].cols[1][i]) : "",formats[:or_fmt])
+        	t.write(r,c+1,ri <= npred[j] ? exp(tdata[j].cols[1][ri]) : "",formats[:or_fmt])
             else
-                t.write(r,c+1,i <= npred[j] ? tdata[j].cols[1][i] : "",formats[:or_fmt])
+                t.write(r,c+1,ri <= npred[j] ? tdata[j].cols[1][ri] : "",formats[:or_fmt])
             end
 
             if ci == true
 
                 if eform == true
                 	# 95% CI Lower
-                	t.write(r,c+2,i <= npred[j] ? exp(tconfint[j][i,1]) : "",formats[:cilb_fmt])
+                	t.write(r,c+2,ri <= npred[j] ? exp(tconfint[j][ri,1]) : "",formats[:cilb_fmt])
 
                 	# 95% CI Upper
-                	t.write(r,c+3,i <= npred[j] ? exp(tconfint[j][i,2]) : "",formats[:ciub_fmt])
+                	t.write(r,c+3,ri <= npred[j] ? exp(tconfint[j][ri,2]) : "",formats[:ciub_fmt])
                 else
                     # 95% CI Lower
-                	t.write(r,c+2,i <= npred[j] ? tconfint[j][i,1] : "",formats[:cilb_fmt])
+                	t.write(r,c+2,ri <= npred[j] ? tconfint[j][ri,1] : "",formats[:cilb_fmt])
 
                 	# 95% CI Upper
-                	t.write(r,c+3,i <= npred[j] ? tconfint[j][i,2] : "",formats[:ciub_fmt])
+                	t.write(r,c+3,ri <= npred[j] ? tconfint[j][ri,2] : "",formats[:ciub_fmt])
                 end
             else
                 # SE
                 if eform == true
-            	    t.write(r,c+2,i <= npred[j] ? exp(tdata[j].cols[1][i])*tdata[j].cols[2][i] : "",formats[:or_fmt])
+            	    t.write(r,c+2,ri <= npred[j] ? exp(tdata[j].cols[1][ri])*tdata[j].cols[2][ri] : "",formats[:or_fmt])
                 else
-                    t.write(r,c+2,i <= npred[j] ? tdata[j].cols[1][i] : "",formats[:or_fmt])
+                    t.write(r,c+2,ri <= npred[j] ? tdata[j].cols[1][ri] : "",formats[:or_fmt])
                 end
 
                 # Z value
-                t.write(r,c+3,i <= npred[j] ? tdata[j].cols[3][i] : "",formats[:or_fmt])
+                t.write(r,c+3,ri <= npred[j] ? tdata[j].cols[3][ri] : "",formats[:or_fmt])
 
             end
 
             # P-Value
-	        t.write(r,c+4,i <= npred[j] ? (tdata[j].cols[4][i] < 0.001 ? "< 0.001" : tdata[j].cols[4][i]) : "" ,formats[:p_fmt])
+	        t.write(r,c+4,ri <= npred[j] ? (tdata[j].cols[4][ri] < 0.001 ? "< 0.001" : tdata[j].cols[4][ri]) : "" ,formats[:p_fmt])
 
             c += 4
 
