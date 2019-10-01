@@ -891,7 +891,7 @@ function dfxls(df::DataFrame,
         for j in start:(start+nrows-1)
             # println("i = ",i,"; j = ",j,". value = ",df[j,i])
 
-            if ismissing(df[j,i]) || (df[j,1] <: Number && (isnan(df[j,i]) || df[j,i] == Inf))
+            if ismissing(df[j,i]) || (isa(df[j,1],Number) && (isnan(df[j,i]) || df[j,i] == Inf))
                 t.write_string(r,c," ",formats[:n_fmt])
             elseif typ[i] <: AbstractString && df[j,i] == ""
                 t.write_string(r,c," ",formats[:text])
