@@ -868,7 +868,7 @@ function dfxls(df::DataFrame,
         if typeof(df[i]) <: CategoricalArray
             typ[i] = eltype(df[i].pool.index)
         else
-            typ[i] = Missings.T(eltype(df[i]))
+            typ[i] = nonmissingtype(eltype(df[i]))
         end
     end
     varnames = names(df)
@@ -905,6 +905,8 @@ function dfxls(df::DataFrame,
                 t.write(r,c,(Dates.value(df[j,i] - DateTime(1899,12,30,0,0,0)))/86400000,formats[:f_datetime])
             elseif typ[i] <: AbstractString
                 t.write(r,c,df[j,i],formats[:text])
+            elseif typ[i] == Symbol || typ[i] == DataType
+                t.write(r,c,string(df[j,i]),formats[:text)
             else
                 # skip
             end
