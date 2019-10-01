@@ -906,7 +906,7 @@ function dfxls(df::DataFrame,
             elseif typ[i] <: AbstractString
                 t.write(r,c,df[j,i],formats[:text])
             elseif typ[i] == Symbol || typ[i] == DataType
-                t.write(r,c,string(df[j,i]),formats[:text)
+                t.write(r,c,string(df[j,i]),formats[:text])
             else
                 # skip
             end
