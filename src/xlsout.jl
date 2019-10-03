@@ -891,20 +891,26 @@ function dfxls(df::DataFrame,
         for j in start:(start+nrows-1)
             # println("i = ",i,"; j = ",j,". value = ",df[j,i])
 
-            if ismissing(df[j,i]) || (isa(df[j,1],Number) && (isnan(df[j,i]) || df[j,i] == Inf))
+            if ismissing(df[j,i])
                 t.write_string(r,c," ",formats[:n_fmt])
-            elseif typ[i] <: AbstractString && df[j,i] == ""
-                t.write_string(r,c," ",formats[:text])
-            elseif typ[i] <: Integer
-                t.write(r,c,df[j,i],formats[:n_fmt])
-            elseif typ[i] <: AbstractFloat
-                t.write(r,c,df[j,i],formats[:f_fmt])
+            elseif typ[i] <: AbstractString
+                if df[j,i] == ""
+                    t.write_string(r,c," ",formats[:text])
+                else
+                    t.write(r,c,df[j,i],formats[:text])
+                end
+            elseif typ[i] <: Number
+                if isnan(df[j,i]) || isinf(df[j,i])
+                    t.write_string(r,c," ",formats[:text])
+                elseif typ[i] <: Integer
+                    t.write(r,c,df[j,i],formats[:n_fmt])
+                elseif typ[i] <: AbstractFloat
+                    t.write(r,c,df[j,i],formats[:f_fmt])
+                end
             elseif typ[i] <: Date
                 t.write(r,c,Dates.value(df[j,i] - Date(1899,12,30)),formats[:f_date])
             elseif typ[i] <: DateTime
                 t.write(r,c,(Dates.value(df[j,i] - DateTime(1899,12,30,0,0,0)))/86400000,formats[:f_datetime])
-            elseif typ[i] <: AbstractString
-                t.write(r,c,df[j,i],formats[:text])
             elseif typ[i] == Symbol || typ[i] == DataType
                 t.write(r,c,string(df[j,i]),formats[:text])
             else
