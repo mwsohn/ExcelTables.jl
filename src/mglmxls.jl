@@ -319,8 +319,8 @@ function mglmxls(glmout,
 
 		    # ROC (c-statistic)
 		    t.write(r+4,c,"Area under the ROC Curve",formats[:model_name])
-		    roc = AUC.auc(glmout[i].model.rr.y,predict(glmout[i]))
-		    t.merge_range(r+4,c+1,r+4,c+4,round(roc,digits=4),formats[:p_fmt_center])
+		    _roc = auc(roc(glmout[i].model.rr.y,predict(glmout[i])))
+		    t.merge_range(r+4,c+1,r+4,c+4,round(_roc,digits=4),formats[:p_fmt_center])
 
 		    r += 5
 	    end
