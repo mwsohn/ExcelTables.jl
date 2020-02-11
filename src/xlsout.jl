@@ -292,7 +292,7 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
 
         # ROC (c-statistic)
         t.write(r+4,c,"Area under the ROC Curve",formats[:model_name])
-        roc = auc(glmout.model.rr.y,predict(glmout))
+        roc = auc(roc(glmout.model.rr.y,predict(glmout)))
         n1 = sum(glmout.model.rr.y) # number of positive responses
         n2 = nobs(glmout) - n1
         q1 = roc / (2 - roc)
