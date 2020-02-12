@@ -253,7 +253,7 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
         end
 
         # P-Value
-        t.write(r,c+4,tdata.cols[4][i].v < 0.001 ? "< 0.001" : tdata.cols[4][i].v ,formats[:p_fmt])
+        t.write(r,c+4,tdata.cols[4][i] < 0.001 ? "< 0.001" : tdata.cols[4][i] ,formats[:p_fmt])
 
         lastvarname = varname[i]
 
