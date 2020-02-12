@@ -108,6 +108,9 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
     if isa(glmout.model,GeneralizedLinearModel)
         distrib = glmout.model.rr.d
         linkfun = Link(glmout.model.rr)
+    else
+        distrib = nothing
+        linkfun = nothing
     end
 
     # create a worksheet
