@@ -1,0 +1,6 @@
+name = "ExcelTables"
+uuid = "039a22b0-6ccd-11ea-3db3-dd592c47f36c"
+version = "0.0.3"
+
+[compat]
+julia = "1"
