@@ -1,6 +1,19 @@
 name = "ExcelTables"
 uuid = "039a22b0-6ccd-11ea-3db3-dd592c47f36c"
-version = "0.0.3"
+version = "0.0.4"
+
+[deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+GLM = "38e38edf-8417-5370-95a0-9cbb8c7f171a"
+HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"FreqTables
+NamedArrays = "86f7a689-2022-50b4-a561-43c23ac3c673"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+Stella = "b1cd83c4-5688-5aa2-8927-7445e86cd0e2"
+Labels = "6d0b4fd8-9bf0-50c8-8d0e-d6c2328e7f2a"
+ROCAnalysis = ROCAnalysis = "f535d66d-59bb-5153-8d2b-ef0a426c6aff"
 
 [compat]
 julia = "1"
