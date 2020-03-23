@@ -14,7 +14,7 @@ PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Stella = "b1cd83c4-5688-5aa2-8927-7445e86cd0e2"
 Labels = "6d0b4fd8-9bf0-50c8-8d0e-d6c2328e7f2a"
-ROCAnalysis = ROCAnalysis = "f535d66d-59bb-5153-8d2b-ef0a426c6aff"
+ROCAnalysis = "f535d66d-59bb-5153-8d2b-ef0a426c6aff"
 
 [compat]
 julia = "1"
