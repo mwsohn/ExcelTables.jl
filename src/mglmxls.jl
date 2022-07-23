@@ -129,13 +129,12 @@ function mglmxls(glmout,
     tconfint = Vector(undef,num_models)
 
     for i=1:num_models
-        if isa(glmout[i].model,CoxModel)
+        if isa(glmout[i].model, CoxModel)
             tdata[i] = Survival.coeftable(glmout[i])
-            tconfint[i] = hcat(coef(glmout[i]), coef(glmout[i])) + tdata[i].cols[2] * quantile(Normal(), (1.0 - level) / 2.0) * [1.0 -1.0]
         else
             tdata[i] = coeftable(glmout[i])
-            tconfint[i] = confint(glmout[i])
         end
+        tconfint[i] = hcat(tdata[i].cols[1], tdata[i].cols[1]) + tdata[i].cols[2] * quantile(Normal(), (1.0 - level) / 2.0) * [1.0 -1.0]
 
         for nm in tdata[i].rownms
             if in(nm, covariates) == false
