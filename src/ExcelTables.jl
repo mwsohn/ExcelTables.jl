@@ -8,7 +8,7 @@ module ExcelTables
 ##
 ################################################################################
 
-using DataFrames, PyCall, CategoricalArrays, Distributions, GLM, StatsBase, DataStructures,
+using DataFrames, PyCall, CategoricalArrays, Distributions, GLM, Survival, StatsBase, DataStructures,
     HypothesisTests, NamedArrays, FreqTables, Stella, Labels, ROCAnalysis, Dates
 
 ##############################################################################

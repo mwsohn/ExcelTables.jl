@@ -65,15 +65,19 @@ function mglmxls(glmout,
     for i=1:num_models
 
         # assuming that all models have the same family and link function
+        otype[i] = "Estimate"
         if isa(glmout[i].model,GeneralizedLinearModel)
             distrib[i] = glmout[i].model.rr.d
             linkfun[i] = Link(glmout[i].model.rr)
+            if eform == true
+                otype[i] = Stella.coeflab(distrib[i], linkfun[i])
+            end
+        elseif isa(glmout[i].model,CoxModel)
+            if eform == true
+                otype[i] = "HR"
+            end
         end
 
-        otype[i] = "Estimate"
-        if eform == true
-            otype[i] = Stella.coeflab(distrib[i],linkfun[i])
-        end
     end
 
     if mtitle == nothing
@@ -125,8 +129,13 @@ function mglmxls(glmout,
     tconfint = Vector(undef,num_models)
 
     for i=1:num_models
-        tdata[i] = coeftable(glmout[i])
-        tconfint[i] = confint(glmout[i])
+        if isa(glmout[i].model,CoxModel)
+            tdata[i] = Survival.coeftable(glmout[i])
+            tconfint[i] = hcat(coef(glmout[i]), coef(glmout[i])) + tdata[i].cols[2] * quantile(Normal(), (1.0 - level) / 2.0) * [1.0 -1.0]
+        else
+            tdata[i] = coeftable(glmout[i])
+            tconfint[i] = confint(glmout[i])
+        end
 
         for nm in tdata[i].rownms
             if in(nm, covariates) == false
@@ -230,7 +239,7 @@ function mglmxls(glmout,
 
     	    # estimates
             if eform == true
-        	t.write(r,c+1,ri <= npred[j] ? exp(tdata[j].cols[1][ri]) : "",formats[:or_fmt])
+        	    t.write(r,c+1,ri <= npred[j] ? exp(tdata[j].cols[1][ri]) : "",formats[:or_fmt])
             else
                 t.write(r,c+1,ri <= npred[j] ? tdata[j].cols[1][ri] : "",formats[:or_fmt])
             end
