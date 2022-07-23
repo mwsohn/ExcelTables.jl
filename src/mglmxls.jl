@@ -134,7 +134,7 @@ function mglmxls(glmout,
         else
             tdata[i] = coeftable(glmout[i])
         end
-        tconfint[i] = hcat(tdata[i].cols[1], tdata[i].cols[1]) + tdata[i].cols[2] * quantile(Normal(), (1.0 - level) / 2.0) * [1.0 -1.0]
+        tconfint[i] = hcat(tdata[i].cols[1], tdata[i].cols[1]) + tdata[i].cols[2] * quantile(Normal(), 0.025) * [1.0 -1.0]
 
         for nm in tdata[i].rownms
             if in(nm, covariates) == false

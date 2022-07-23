@@ -17,6 +17,7 @@ Stella = "b1cd83c4-5688-5aa2-8927-7445e86cd0e2"
 Labels = "6d0b4fd8-9bf0-50c8-8d0e-d6c2328e7f2a"
 ROCAnalysis = "f535d66d-59bb-5153-8d2b-ef0a426c6aff"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Survival = "8a913413-2070-5976-9d4c-2b364fdc2f7f"
 
 [compat]
 julia = "1"
