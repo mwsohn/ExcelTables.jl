@@ -309,7 +309,7 @@ function mglmxls(glmout,
         
             r += 2
 	
-	    else
+	    elseif !isa(glmout[i].model, CoxModel)
             if isa(linkfun[i],LogitLink)
                 t.write(r,c,"Pseudo R² (MacFadden)",formats[:model_name])
                 t.merge_range(r,c+1,r,c+4,macfadden(glmout[i]),formats[:p_fmt_center])
@@ -332,9 +332,7 @@ function mglmxls(glmout,
 
                 r += 5
             end
-    	end
-	
-        if !isa(glmout[i].model,CoxModel)
+
             # AIC & BIC
             t.write(r,c,"AIC",formats[:model_name])
             t.merge_range(r,c+1,r,c+4,aic(glmout[i]),formats[:p_fmt_center])
@@ -347,7 +345,7 @@ function mglmxls(glmout,
             c += 4
         else
             r = row2
-            c += 2
+            c += 4
         end
     end
 end
