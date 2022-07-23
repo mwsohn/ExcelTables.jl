@@ -1,4 +1,4 @@
-VERSION >= v"0.6.0" && __precompile__()
+VERSION >= v"1.0.0" && __precompile__()
 
 module ExcelTables
 
@@ -8,7 +8,7 @@ module ExcelTables
 ##
 ################################################################################
 
-using DataFrames, PyCall, Distributions, GLM, StatsBase, DataStructures,
+using DataFrames, PyCall, CategoricalArrays, Distributions, GLM, StatsBase, DataStructures,
     HypothesisTests, NamedArrays, FreqTables, Stella, Labels, ROCAnalysis, Dates
 
 ##############################################################################

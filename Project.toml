@@ -1,9 +1,10 @@
 name = "ExcelTables"
 uuid = "039a22b0-6ccd-11ea-3db3-dd592c47f36c"
-version = "0.0.10"
+version = "0.0.11"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+CategoricalArrays = "324d7699-5711-5eae-9e2f-1d82baa6b597"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 FreqTables = "da1fdf0e-e0ff-5433-a45f-9bb5ff651cb1"
