@@ -311,26 +311,26 @@ function mglmxls(glmout,
 	
 	    elseif !isa(glmout[i].model, CoxModel)
             if isa(linkfun[i],LogitLink)
-                t.write(r,c,"Pseudo R² (MacFadden)",formats[:model_name])
-                t.merge_range(r,c+1,r,c+4,macfadden(glmout[i]),formats[:p_fmt_center])
-                t.write(r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])
-                t.merge_range(r+1,c+1,r+1,c+4,nagelkerke(glmout[i]),formats[:p_fmt_center])
+                # t.write(r,c,"Pseudo R² (MacFadden)",formats[:model_name])
+                # t.merge_range(r,c+1,r,c+4,macfadden(glmout[i]),formats[:p_fmt_center])
+                # t.write(r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])
+                # t.merge_range(r+1,c+1,r+1,c+4,nagelkerke(glmout[i]),formats[:p_fmt_center])
 
-                # -2 log-likelihood
-                t.write(r+2,c,"-2 Log-Likelihood",formats[:model_name])
-                t.merge_range(r+2,c+1,r+2,c+4,deviance(glmout[i]),formats[:p_fmt_center])
+                # # -2 log-likelihood
+                # t.write(r+2,c,"-2 Log-Likelihood",formats[:model_name])
+                # t.merge_range(r+2,c+1,r+2,c+4,deviance(glmout[i]),formats[:p_fmt_center])
 
-                # Hosmer-Lemeshow GOF test
-                t.write(r+3,c,"Hosmer-Lemeshow Chisq Test (df), p-value",formats[:model_name])
-                hl = hltest(glmout[i])
-                t.merge_range(r+3,c+1,r+3,c+4,string(round(hl[1],digits=4)," (",hl[2],"); p = ",round(hl[3],digits=4)),formats[:p_fmt_center])
+                # # Hosmer-Lemeshow GOF test
+                # t.write(r+3,c,"Hosmer-Lemeshow Chisq Test (df), p-value",formats[:model_name])
+                # hl = hltest(glmout[i])
+                # t.merge_range(r+3,c+1,r+3,c+4,string(round(hl[1],digits=4)," (",hl[2],"); p = ",round(hl[3],digits=4)),formats[:p_fmt_center])
 
-                # ROC (c-statistic)
-                t.write(r+4,c,"Area under the ROC Curve",formats[:model_name])
-                _roc = auc(roc(glmout[i].model.rr.y,predict(glmout[i])))
-                t.merge_range(r+4,c+1,r+4,c+4,round(_roc,digits=4),formats[:p_fmt_center])
+                # # ROC (c-statistic)
+                # t.write(r+4,c,"Area under the ROC Curve",formats[:model_name])
+                # _roc = auc(roc(glmout[i].model.rr.y,predict(glmout[i])))
+                # t.merge_range(r+4,c+1,r+4,c+4,round(_roc,digits=4),formats[:p_fmt_center])
 
-                r += 5
+                # r += 5
             end
 
             # AIC & BIC
