@@ -1,6 +1,5 @@
 name = "ExcelTables"
 uuid = "039a22b0-6ccd-11ea-3db3-dd592c47f36c"
-version = "0.0.11"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
@@ -20,4 +19,4 @@ Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 Survival = "8a913413-2070-5976-9d4c-2b364fdc2f7f"
 
 [compat]
-julia = "1"
+
