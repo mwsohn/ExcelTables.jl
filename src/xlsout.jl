@@ -606,8 +606,8 @@ function bivariatexls(df::DataFrame,
             t.write_string(r,c,string(vars,", mean (SD)"),formats[:model_name])
 
             # All
-            t.write(r,c+1,mean(df3[!,varname]),formats[:f_fmt_right])
-            t.write(r,c+2,std(df3[!,varname]),formats[:f_fmt_left_parens])
+            t.write(r,c+1,size(df3,1) > 0 ? mean(df3[!,varname]) : "",formats[:f_fmt_right])
+            t.write(r,c+2,size(df3,1) > 0 ? std(df3[!,varname]) : "",formats[:f_fmt_left_parens])
 
             # colvar levels
             for i = 1:nlev
