@@ -540,7 +540,7 @@ function bivariatexls(df::DataFrame,
                     t.write(r,c+j*2+1,x.array[nrow,j],formats[:n_fmt_right])
                     if column_percent
                         t.write(r,c+j*2+2, coltot[j] > 0 ? x.array[nrow,j]/coltot[j] : "",formats[:pct_fmt_parens])
-                    elseif rowtot[2] > 0
+                    else # elseif rowtot[2] > 0
                         t.write(r,c+j*2+2, rowtot[nrow] > 0 ? x.array[nrow,j]/rowtot[nrow] : "",formats[:pct_fmt_parens])
                     end
                 end
