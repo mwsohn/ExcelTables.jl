@@ -344,6 +344,15 @@ function mglmxls(glmout,
             r = row2
             c += 4
         else
+
+            # AIC & BIC
+            t.write(r,c,"AIC",formats[:model_name])
+            t.merge_range(r,c+1,r,c+4,aic(glmout[i]),formats[:p_fmt_center])
+
+            r += 1
+            t.write(r,c,"BIC",formats[:model_name])
+            t.merge_range(r,c+1,r,c+4,bic(glmout[i]),formats[:p_fmt_center])
+
             r = row2
             c += 4
         end
