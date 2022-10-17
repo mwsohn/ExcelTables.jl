@@ -606,13 +606,19 @@ function bivariatexls(df::DataFrame,
             t.write_string(r,c,string(vars,", mean (SD)"),formats[:model_name])
 
             # All
-            amean = mean(df3[!,varname])
-            if isnan(amean)
+            tmpvec = skipmissing(df3[!,varname])
+            if length(tmpvec) == 0
                 amean = ""
-            end
-            astd = std(df3[!,varname])
-            if isnan(astd)
                 astd = ""
+            else
+                amean = mean(tmpvec)
+                if isnan(amean)
+                    amean = ""
+                end
+                astd = std(tmpvec)
+                if isnan(astd)
+                    astd = ""
+                end
             end
             t.write(r,c+1,amean,formats[:f_fmt_right])
             t.write(r,c+2,astd,formats[:f_fmt_left_parens])
