@@ -606,7 +606,7 @@ function bivariatexls(df::DataFrame,
             t.write_string(r,c,string(vars,", mean (SD)"),formats[:model_name])
 
             # All
-            tmpvec = skipmissing(df3[!,varname])
+            tmpvec = collect(skipmissing(df3[!,varname]))
             if length(tmpvec) == 0
                 amean = ""
                 astd = ""
