@@ -780,7 +780,7 @@ function univariatexls(df::DataFrame,
         end
 
         # non-missing values
-        vec = collect(skipmissing(df[!,vsym]))
+        len = count(ismissing.(df[!,vsym]))
 
         # if there is a label dictionary, pick up the variable label
         varstr = string(vsym)
@@ -789,7 +789,7 @@ function univariatexls(df::DataFrame,
         end
 
         t.write_string(0,col,varstr,formats[:heading])
-        u = Stella.univariate(vec) #,wt=df[wt])
+        u = Stella.univariate(df[!,vsym]) #,wt=df[wt])
         for j = 1:14
             if j<4
                 fmttype = :n_fmt
@@ -803,8 +803,8 @@ function univariatexls(df::DataFrame,
             end
         end
 
-        len = length(vec) < 5 ? length(vec) : 5
-        smallest=Stella.smallest(vec,n = len)
+        len = len < 5 ? len : 5
+        smallest=Stella.smallest(df[!,vsym],n = len)
         if nonmissingtype(eltype(df)) <: Integer
             fmttype = :n_fmt
         else
