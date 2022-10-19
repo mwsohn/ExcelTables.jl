@@ -606,7 +606,7 @@ function bivariatexls(df::DataFrame,
             t.write_string(r,c,string(vars,", mean (SD)"),formats[:model_name])
 
             # All
-            tmpvec = collect(skipmissing(df3[!,varname]))
+            tmpvec = collect(skipmissing(df3[!,varname])
             if length(tmpvec) == 0
                 amean = ""
                 astd = ""
@@ -789,7 +789,7 @@ function univariatexls(df::DataFrame,
                 t.write(j,col,u[j,:Value],formats[fmttype])
             end
         end
-        smallest=Stella.smallest(df[vsym])
+        smallest=Stella.smallest(df[!,vsym])
         if eltype(df) <: Integer
             fmttype = :n_fmt
         else
@@ -798,7 +798,7 @@ function univariatexls(df::DataFrame,
         for j = 1:5
             t.write(j+14,col,smallest[j],formats[fmttype])
         end
-        largest=Stella.largest(df[vsym])
+        largest=Stella.largest(df[!,vsym])
         for j = 1:5
             t.write(j+19,col,largest[j],formats[fmttype])
         end
