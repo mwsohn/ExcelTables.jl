@@ -780,7 +780,7 @@ function univariatexls(df::DataFrame,
         end
 
         # non-missing values
-        len = sum(ismissing.(df[!,vsym]) .== false)
+        len = size(df,1) - count(ismissing, df[!,vsym])  # sum(ismissing.(df[!,vsym]) .== false)
 
         # if there is a label dictionary, pick up the variable label
         varstr = string(vsym)
