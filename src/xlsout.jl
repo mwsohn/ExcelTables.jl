@@ -606,7 +606,7 @@ function bivariatexls(df::DataFrame,
             t.write_string(r,c,string(vars,", mean (SD)"),formats[:model_name])
 
             # All
-            tmpvec = collect(skipmissing(df3[!,varname])
+            tmpvec = collect(skipmissing(df3[!,varname]))
             if length(tmpvec) == 0
                 amean = ""
                 astd = ""
@@ -776,7 +776,7 @@ function univariatexls(df::DataFrame,
         end
 
         t.write_string(0,col,varstr,formats[:heading])
-        u = univariate(df,vsym) #,wt=df[wt])
+        u = Stella.univariate(df,vsym) #,wt=df[wt])
         for j = 1:14
             if j<4
                 fmttype = :n_fmt
