@@ -769,6 +769,19 @@ function univariatexls(df::DataFrame,
     col = 1
     for vsym in contvars
 
+        # if symbol is not found in the DataFrame
+        if !in(vsym,propertynames(df))
+            continue
+        end
+
+        # vsym is not a real number
+        if (nonmissingtype(eltype(df[!,vsym])) <: Real) == false
+            continue
+        end
+
+        # non-missing values
+        vec = collect(skipmissing(df[!,vsym]))
+
         # if there is a label dictionary, pick up the variable label
         varstr = string(vsym)
         if labels != nothing
@@ -776,7 +789,7 @@ function univariatexls(df::DataFrame,
         end
 
         t.write_string(0,col,varstr,formats[:heading])
-        u = Stella.univariate(df,vsym) #,wt=df[wt])
+        u = Stella.univariate(vec) #,wt=df[wt])
         for j = 1:14
             if j<4
                 fmttype = :n_fmt
@@ -789,18 +802,28 @@ function univariatexls(df::DataFrame,
                 t.write(j,col,u[j,:Value],formats[fmttype])
             end
         end
-        smallest=Stella.smallest(df[!,vsym])
-        if eltype(df) <: Integer
+
+        len = length(vec) < 5 ? length(vec) : 5
+        smallest=Stella.smallest(vec,n = len)
+        if nonmissingtype(eltype(df)) <: Integer
             fmttype = :n_fmt
         else
             fmttype = :p_fmt
         end
         for j = 1:5
-            t.write(j+14,col,smallest[j],formats[fmttype])
+            if j <= len
+                t.write(j+14,col,smallest[j],formats[fmttype])
+            else
+                t.write(j+14,col,"",formats[fmttype])
+            end
         end
-        largest=Stella.largest(df[!,vsym])
+        largest=Stella.largest(df[!,vsym], n = len)
         for j = 1:5
-            t.write(j+19,col,largest[j],formats[fmttype])
+            if j <= len
+                t.write(j+19,col,largest[j],formats[fmttype])
+            else
+                t.write(j+19,col,"",formats[fmttype])
+            end
         end
         col += 1
     end
