@@ -780,7 +780,7 @@ function univariatexls(df::DataFrame,
         end
 
         # non-missing values
-        len = count(ismissing.(df[!,vsym]))
+        len = sum(ismissing.(df[!,vsym]) .== false)
 
         # if there is a label dictionary, pick up the variable label
         varstr = string(vsym)
@@ -804,7 +804,7 @@ function univariatexls(df::DataFrame,
         end
 
         len = len < 5 ? len : 5
-        smallest=Stella.smallest(df[!,vsym],n = len)
+        smallest=Stella.smallest(df[!,vsym], n = len)
         if nonmissingtype(eltype(df)) <: Integer
             fmttype = :n_fmt
         else
