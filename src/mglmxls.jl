@@ -307,9 +307,11 @@ function mglmxls(glmout,
             t.write(r+1,c,"Adjusted R²",formats[:model_name])
             t.merge_range(r+1,c+1,r+1,c+4,adjr2(glmout[i]),formats[:p_fmt_center])
         
-            r += 2
+            # r += 2
+	    r = row2
+	    c += 4
 	
-	    elseif !isa(glmout[i].model, CoxModel)
+	elseif !isa(glmout[i].model, CoxModel)
             if isa(linkfun[i],LogitLink)
                 # t.write(r,c,"Pseudo R² (MacFadden)",formats[:model_name])
                 # t.merge_range(r,c+1,r,c+4,macfadden(glmout[i]),formats[:p_fmt_center])
