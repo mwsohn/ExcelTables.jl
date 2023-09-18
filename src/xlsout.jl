@@ -634,7 +634,7 @@ function bivariatexls(df::DataFrame,
                 end
             end
             if size(y,1) > 1
-                pval = parse(Float64,Stella.anova(df3,varname,colvar; table=false)[1,6])
+                pval = Stella.anova(df3,varname,colvar; pval=true)
                 if isnan(pval) || isinf(pval)
                     pval = ""
                 elseif pval < 0.001
