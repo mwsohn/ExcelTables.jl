@@ -740,31 +740,37 @@ function univariatexls(df::DataFrame,
     t.set_column(1,length(contvars),12)
 
     # output the row names
+    rownms = ["N Total", "N Miss", "N Used", "Sum", "Mean",
+            "SD", "Variance", "Minimum", "P25", "Median", "P75", "Maximum",
+            "Skewness","Kurtosis","Smalles","","","","","Largest","","","",""]
+
     t.write_string(r,c,"Statistic",formats[:heading])
-    t.write_string(r+1,c,"N Total",formats[:heading_left])
-    t.write_string(r+2,c,"N Miss",formats[:heading_left])
-    t.write_string(r+3,c,"N Used",formats[:heading_left])
-    t.write_string(r+4,c,"Sum",formats[:heading_left])
-    t.write_string(r+5,c,"Mean",formats[:heading_left])
-    t.write_string(r+6,c,"SD",formats[:heading_left])
-    t.write_string(r+7,c,"Variance",formats[:heading_left])
-    t.write_string(r+8,c,"Minimum",formats[:heading_left])
-    t.write_string(r+9,c,"P25",formats[:heading_left])
-    t.write_string(r+10,c,"Median",formats[:heading_left])
-    t.write_string(r+11,c,"P75",formats[:heading_left])
-    t.write_string(r+12,c,"Maximum",formats[:heading_left])
-    t.write_string(r+13,c,"Skewness",formats[:heading_left])
-    t.write_string(r+14,c,"Kurtosis",formats[:heading_left])
-    t.write_string(r+15,c,"Smallest",formats[:heading_left])
-    t.write_string(r+16,c,"",formats[:heading_left])
-    t.write_string(r+17,c,"",formats[:heading_left])
-    t.write_string(r+18,c,"",formats[:heading_left])
-    t.write_string(r+19,c,"",formats[:heading_left])
-    t.write_string(r+20,c,"Largest",formats[:heading_left])
-    t.write_string(r+21,c,"",formats[:heading_left])
-    t.write_string(r+22,c,"",formats[:heading_left])
-    t.write_string(r+23,c,"",formats[:heading_left])
-    t.write_string(r+24,c,"",formats[:heading_left])
+    for i in 1:24
+        t.write_string(r+i,c,rownms[i],formats[:heading_left])
+    end
+    # t.write_string(r+2,c,"N Miss",formats[:heading_left])
+    # t.write_string(r+3,c,"N Used",formats[:heading_left])
+    # t.write_string(r+4,c,"Sum",formats[:heading_left])
+    # t.write_string(r+5,c,"Mean",formats[:heading_left])
+    # t.write_string(r+6,c,"SD",formats[:heading_left])
+    # t.write_string(r+7,c,"Variance",formats[:heading_left])
+    # t.write_string(r+8,c,"Minimum",formats[:heading_left])
+    # t.write_string(r+9,c,"P25",formats[:heading_left])
+    # t.write_string(r+10,c,"Median",formats[:heading_left])
+    # t.write_string(r+11,c,"P75",formats[:heading_left])
+    # t.write_string(r+12,c,"Maximum",formats[:heading_left])
+    # t.write_string(r+13,c,"Skewness",formats[:heading_left])
+    # t.write_string(r+14,c,"Kurtosis",formats[:heading_left])
+    # t.write_string(r+15,c,"Smallest",formats[:heading_left])
+    # t.write_string(r+16,c,"",formats[:heading_left])
+    # t.write_string(r+17,c,"",formats[:heading_left])
+    # t.write_string(r+18,c,"",formats[:heading_left])
+    # t.write_string(r+19,c,"",formats[:heading_left])
+    # t.write_string(r+20,c,"Largest",formats[:heading_left])
+    # t.write_string(r+21,c,"",formats[:heading_left])
+    # t.write_string(r+22,c,"",formats[:heading_left])
+    # t.write_string(r+23,c,"",formats[:heading_left])
+    # t.write_string(r+24,c,"",formats[:heading_left])
 
     col = 1
     for vsym in contvars
