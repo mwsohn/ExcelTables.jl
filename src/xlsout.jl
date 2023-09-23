@@ -35,22 +35,6 @@ function hltest(glmout,q = 10)
     return (hlstat, dof, pval)
 end
 
-function nagelkerke(glmout)
-    return StatsBase.r2(glmout,:Nagelkerke)
-    # L = loglikelihood(glmout)
-    # L0 = loglikelihood(glm(@eval(@formula($(glmout.mf.terms.eterms[1]) ~ 1)),glmout.mf.df,Bernoulli(),LogitLink()))
-    # pow = 2/nobs(glmout)
-    # return (1 - exp(-pow*(L - L0))) / (1 - exp(pow*L0))
-end
-
-function macfadden(glmout)
-    return StatsBase.r2(glmout,:McFadden)
-    # L = loglikelihood(glmout)
-    # L0 = loglikelihood(glm(@eval(@formula($(glmout.mf.terms.eterms[1]) ~ 1)),glmout.mf.df,Bernoulli(),LogitLink()))
-    # return 1 - L/L0
-end
-
-
 """
     glmxls(glmout::DataFrames.DataFrameRegressionModel, workbook::PyObject, worksheet::AbstractString; labels::Union{Nothing,Label}=nothing,eform=false,ci=true, row = 0, col =0)
 
@@ -105,12 +89,10 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
         error("This is not a regression model output.")
     end
 
-    if isa(glmout.model,GeneralizedLinearModel)
+    distrib = linkfun = nothing
+    if isa(glmout.model, GeneralizedLinearModel)
         distrib = glmout.model.rr.d
         linkfun = Link(glmout.model.rr)
-    else
-        distrib = nothing
-        linkfun = nothing
     end
 
     # create a worksheet
@@ -277,12 +259,14 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
     # t.merge_range(r,c+1,r,c+4,dof(glmout),formats[:n_fmt_center])
 
     # R² or pseudo R²
+    # For logistic regressions, compute and output -2 log-likelihood, Hosmer-Lemeshow test, and AUC
     r += 1
     if isa(linkfun,LogitLink)
         t.write(r,c,"Pseudo R² (MacFadden)",formats[:model_name])
-        t.merge_range(r,c+1,r,c+4,macfadden(glmout),formats[:p_fmt_center])
+        t.merge_range(r, c + 1, r, c + 4, StatsBase.r2(glmout, :MacFadden), formats[:p_fmt_center])
         t.write(r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])
-        t.merge_range(r+1,c+1,r+1,c+4,nagelkerke(glmout),formats[:p_fmt_center])
+        t.merge_range(r + 1, c + 1, r + 1, c + 4, StatsBase.r2(glmout, :Nagelkerke), formats[:p_fmt_center])
+        # t.merge_range(r+1,c+1,r+1,c+4,nagelkerke(glmout),formats[:p_fmt_center])
 
         # -2 log-likelihood
         t.write(r+2,c,"-2 Log-Likelihood",formats[:model_name])
