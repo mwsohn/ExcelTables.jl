@@ -444,13 +444,16 @@ function bivariatexls(df::DataFrame,
 
     # value labels for colvar
     vals = value_label(df,colvar)
+
     for i = 1:nlev
 
         # value label
-        vals = string(colnms[i])
+        # vals = string(colnms[i])
         # if labels != nothing
         #     vals = value_label(df,colvar,colnms[i])
         # end
+
+        println(colvar, "    ", colnms[i], "     ", vals[colnms[i]])
 
         t.merge_range(r,c+(i-1)*2,r,c+(i-1)*2+1,vals[colnms[i]],formats[:heading])
         t.write_string(r+1,c+(i-1)*2,"N",formats[:n_fmt_right])
