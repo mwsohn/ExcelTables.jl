@@ -452,10 +452,13 @@ function bivariatexls(df::DataFrame,
         # if labels != nothing
         #     vals = value_label(df,colvar,colnms[i])
         # end
-
-        println(colvar, "    ", colnms[i], "     ", vals[colnms[i]])
-
-        t.merge_range(r,c+(i-1)*2,r,c+(i-1)*2+1,vals[colnms[i]],formats[:heading])
+        # println(colvar, "    ", colnms[i], "     ", vals[colnms[i]])
+        if haskey(vals,colnms[i])
+            vlab = vals[colnms[i]]
+        else
+            vlab = colnms[i]
+        end
+        t.merge_range(r,c+(i-1)*2,r,c+(i-1)*2+1,vlab,formats[:heading])
         t.write_string(r+1,c+(i-1)*2,"N",formats[:n_fmt_right])
         t.write_string(r+1,c+(i-1)*2+1,"(%)",formats[:pct_fmt_parens])
     end
