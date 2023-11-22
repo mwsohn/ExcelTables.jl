@@ -37,17 +37,10 @@ end
 
 function nagelkerke(glmout)
     return StatsBase.r2(glmout,:Nagelkerke)
-    # L = loglikelihood(glmout)
-    # L0 = loglikelihood(glm(@eval(@formula($(glmout.mf.terms.eterms[1]) ~ 1)),glmout.mf.df,Bernoulli(),LogitLink()))
-    # pow = 2/nobs(glmout)
-    # return (1 - exp(-pow*(L - L0))) / (1 - exp(pow*L0))
 end
 
 function macfadden(glmout)
     return StatsBase.r2(glmout,:McFadden)
-    # L = loglikelihood(glmout)
-    # L0 = loglikelihood(glm(@eval(@formula($(glmout.mf.terms.eterms[1]) ~ 1)),glmout.mf.df,Bernoulli(),LogitLink()))
-    # return 1 - L/L0
 end
 
 
@@ -390,7 +383,7 @@ function bivariatexls(df::DataFrame,
     wbook::PyObject,
     wsheet::AbstractString;
     wt::Union{Nothing,Symbol} = nothing,
-    labels::Union{Nothing,Label} = nothing,
+    # labels::Union{Nothing,Label} = nothing,
     row::Int = 0,
     col::Int = 0,
     column_percent::Bool = true,
@@ -437,10 +430,7 @@ function bivariatexls(df::DataFrame,
     t.merge_range(r,c,r+2,c,"Variable",formats[:heading])
 
     # 1st row = variable name
-    colvname = String(colvar)
-    if labels != nothing
-        colvname = varlab(labels,colvar)
-    end
+    colvname = col_label(df,colvar)
     t.merge_range(r,c+1,r,c+(nlev+1)*2+1,colvname,formats[:heading])
 
     # 2nd and 3rd rows
@@ -451,15 +441,18 @@ function bivariatexls(df::DataFrame,
     t.write_string(r+1,2,"(%)",formats[:pct_fmt_parens])
 
     c = 3
+
+    # value labels for colvar
+    vals = value_label(df,colvar)
     for i = 1:nlev
 
         # value label
         vals = string(colnms[i])
-        if labels != nothing
-            vals = vallab(labels,colvar,colnms[i])
-        end
+        # if labels != nothing
+        #     vals = value_label(df,colvar,colnms[i])
+        # end
 
-        t.merge_range(r,c+(i-1)*2,r,c+(i-1)*2+1,vals,formats[:heading])
+        t.merge_range(r,c+(i-1)*2,r,c+(i-1)*2+1,vals[colnms[i]],formats[:heading])
         t.write_string(r+1,c+(i-1)*2,"N",formats[:n_fmt_right])
         t.write_string(r+1,c+(i-1)*2+1,"(%)",formats[:pct_fmt_parens])
     end
@@ -501,10 +494,8 @@ function bivariatexls(df::DataFrame,
         # end
 
         # print the variable name
-        vars = string(varname)
-        if labels != nothing
-            vars = varlab(labels,varname)
-        end
+        # vars = string(varname)
+        vars = col_label(labels,varname)
 
         # determine if varname is categorical or continuous
         if isa(df2[!,varname], CategoricalArray) || eltype(df2[!,varname]) == String
@@ -564,9 +555,10 @@ function bivariatexls(df::DataFrame,
                     # row value
                     vals = string(rowval[i])
 
-                    if labels != nothing
-                        vals = vallab(labels,varname,rowval[i])
-                    end
+                    # if labels != nothing
+                    #     vals = vallab(labels,varname,rowval[i])
+                    # end
+                    vals = value_label(df,varname,rowval[i])
                     t.write_string(r,c,vals,formats[:varname_1indent])
 
                     # row total
