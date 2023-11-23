@@ -501,7 +501,7 @@ function bivariatexls(df::DataFrame,
 
         # print the variable name
         # vars = string(varname)
-        vars = col_label(labels,varname)
+        vars = col_label(df,varname)
 
         # determine if varname is categorical or continuous
         if isa(df2[!,varname], CategoricalArray) || eltype(df2[!,varname]) == String
