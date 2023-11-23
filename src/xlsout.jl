@@ -559,12 +559,12 @@ function bivariatexls(df::DataFrame,
                 r += 1
                 for i = 1:length(rowval)
                     # row value
-                    vals = string(rowval[i])
+                    # vals = string(rowval[i])
 
                     # if labels != nothing
                     #     vals = vallab(labels,varname,rowval[i])
                     # end
-                    vals = value_label(df,varname,rowval[i])
+                    vals = string(value_label(df,varname,rowval[i]))
                     t.write_string(r,c,vals,formats[:varname_1indent])
 
                     # row total
