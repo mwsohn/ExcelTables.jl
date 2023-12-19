@@ -383,13 +383,16 @@ function bivariatexls(df::DataFrame,
     wbook::PyObject,
     wsheet::AbstractString;
     wt::Union{Nothing,Symbol} = nothing,
-    # labels::Union{Nothing,Label} = nothing,
+    labels::Union{Nothing,Label} = nothing,
     row::Int = 0,
     col::Int = 0,
     column_percent::Bool = true,
     verbose::Bool = false)
 
-    # check data
+    # labels
+    if labels == nothing && "Labels" in metadatakeys(df)
+        labels = load_labels(df)
+    end
 
     # colvar has to be a CategoricalArray and must have 2 or more categories
     if isa(df[!,colvar], CategoricalArray) == false || length(levels(df[!,colvar])) < 2
@@ -430,7 +433,7 @@ function bivariatexls(df::DataFrame,
     t.merge_range(r,c,r+2,c,"Variable",formats[:heading])
 
     # 1st row = variable name
-    colvname = col_label(df,colvar)
+    colvname = varlab(df,colvar)
     t.merge_range(r,c+1,r,c+(nlev+1)*2+1,colvname,formats[:heading])
 
     # 2nd and 3rd rows
@@ -443,7 +446,7 @@ function bivariatexls(df::DataFrame,
     c = 3
 
     # value labels for colvar
-    vals = value_label(df,colvar)
+    vals = vallab(df,colvar)
 
     for i = 1:nlev
 
@@ -501,7 +504,7 @@ function bivariatexls(df::DataFrame,
 
         # print the variable name
         # vars = string(varname)
-        vars = col_label(df,varname)
+        vars = varlab(df,varname)
 
         # determine if varname is categorical or continuous
         if isa(df2[!,varname], CategoricalArray) || eltype(df2[!,varname]) == String
