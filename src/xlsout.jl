@@ -601,7 +601,7 @@ function bivariatexls(df::DataFrame,
         else
             # continuous variable
             df3=df2[completecases(df2[!,[varname]]),[varname,colvar]]
-            y = tabstat(df3,varname,colvar, table=false) #,wt=df3[wt])
+            y = tabstat(df3,varname,colvar, table=false, labels=labels) #,wt=df3[wt])
 
             # variable name
             t.write_string(r,c,string(vars,", mean (SD)"),formats[:model_name])
