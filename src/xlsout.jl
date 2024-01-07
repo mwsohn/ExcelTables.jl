@@ -459,7 +459,7 @@ function bivariatexls(df::DataFrame,
         if vals != nothing && haskey(vals,colnms[i])
             vlab = vals[colnms[i]]
         else
-            vlab = colnms[i]
+            vlab = string(colnms[i])
         end
         t.merge_range(r,c+(i-1)*2,r,c+(i-1)*2+1,vlab,formats[:heading])
         t.write_string(r+1,c+(i-1)*2,"N",formats[:n_fmt_right])
