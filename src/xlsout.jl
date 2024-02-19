@@ -382,17 +382,17 @@ function bivariatexls(df::DataFrame,
     rowvars::Vector{Symbol},
     wbook::PyObject,
     wsheet::AbstractString;
-    wt::Union{Nothing,Symbol} = nothing,
-    labels::Union{Nothing,Label} = nothing,
+    wt::Symbol = nothing,
+    labels::Label = nothing,
     row::Int = 0,
     col::Int = 0,
     column_percent::Bool = true,
     verbose::Bool = false)
 
     # labels
-    if labels == nothing && "Labels" in metadatakeys(df)
-        labels = load_labels(df)
-    end
+    # if labels == nothing && "Labels" in metadatakeys(df)
+    #     labels = load_labels(df)
+    # end
 
     # colvar has to be a CategoricalArray and must have 2 or more categories
     if isa(df[!,colvar], CategoricalArray) == false || length(levels(df[!,colvar])) < 2
