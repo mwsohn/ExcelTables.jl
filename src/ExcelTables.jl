@@ -7,7 +7,7 @@ module ExcelTables
 ################################################################################
 
 using DataFrames, PyCall, CategoricalArrays, Distributions, GLM, Survival, StatsBase, DataStructures,
-    HypothesisTests, NamedArrays, FreqTables, Stella, Labels, ROCAnalysis, Dates
+    HypothesisTests, NamedArrays, FreqTables, Stella, TableMetadataTools, ROCAnalysis, Dates
 
 ##############################################################################
 ##
@@ -20,8 +20,6 @@ export  univariatexls, # output univariate statistics in an excel worksheet
         glmxls,        # output GLM models to an excel worksheet
         mglmxls,       # output multiple GLM regression models to an excel spreadsheet
         dfxls,         # output dataframe in an excel file
-        mcfadden,
-        nagelkerke,
         hltest
 
 ##############################################################################
