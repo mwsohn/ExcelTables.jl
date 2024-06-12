@@ -35,17 +35,18 @@ function hltest(glmout,q = 10)
     return (hlstat, dof, pval)
 end
 
-function nagelkerke(glmout)
-    return StatsBase.r2(glmout,:Nagelkerke)
-end
+# For these functions, use r2(GLM, :MacFadden) or r2(GLM,:Nagelkerke)
+# function nagelkerke(glmout)
+#     return StatsBase.r2(glmout,:Nagelkerke)
+# end
 
-function macfadden(glmout)
-    return StatsBase.r2(glmout,:McFadden)
-end
+# function macfadden(glmout)
+#     return StatsBase.r2(glmout,:McFadden)
+# end
 
 
 """
-    glmxls(glmout::DataFrames.DataFrameRegressionModel, workbook::PyObject, worksheet::AbstractString; labels::Union{Nothing,Label}=nothing,eform=false,ci=true, row = 0, col =0)
+    glmxls(glmout::DataFrames.DataFrameRegressionModel, workbook::PyObject, worksheet::AbstractString; eform=false,ci=true, row = 0, col =0)
 
 Outputs a GLM regression table to an excel spreadsheet.
 To use this function, `PyCall` is required with a working version python and
@@ -55,7 +56,6 @@ or a value of a variable in a `Label`, the label will be output. Options are:
 - `glmout`: returned value from a GLM regression model
 - `workbook`: a returned value from xlsxwriter.Workbook() function (see an example below)
 - `worksheet`: a string for the worksheet name
-- `labels`: an option to specify a `label` dictionary (see an example below)
 - `eform`: use `eform = true` to get exponentiated estimates, standard errors, or 95% confidence intervals
 - `ci`: use `ci = true` (default) to get 95% confidence intervals. `ci = false` will produce standard errors and Z values instead.
 - `row`: specify the row of the workbook to start the output table (default = 0 (for row 1))
@@ -76,7 +76,7 @@ PyObject <xlsxwriter.workbook.Workbook object at 0x000000002A628E80>
 
 julia> glmxls(ols1,wb,"OLS1",labels = label)
 
-julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate",labels = label)
+julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate")
 
 Julia> wb.close()
 ```
@@ -86,15 +86,14 @@ Alternatively, one can create a spreadsheet file directly. `PyCall` or `@pyimpor
 does not need to be called before the function.
 
 ```
-julia> glmxls(ols1,"test_workbook.xlsx","OLS1",labels = label)
+julia> glmxls(ols1,"test_workbook.xlsx","OLS1")
 ```
 
 """
-function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
-    labels::Union{Nothing,Label} = nothing,
-    eform::Bool = false, ci = true, row = 0, col = 0)
+function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels = nothing,
+    eform::Bool = false, ci = true, row = 0, col = 0, robust::Symbol = nothing)
 
-    if (typeof(glmout) <: StatsModels.RegressionModel) == false
+    if (typeof(glmout) <: StatsModels.TableRegressionModel) == false
         error("This is not a regression model output.")
     end
 
@@ -162,13 +161,13 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
             vals[i] = ""
         end
 
-        # use labels if exist
+        # column labels
         if labels != nothing
-            if vals[i] != ""
-                valn = vals[i] == "true" ? 1 : parse(Int,vals[i])
-                vals[i] = vallab(labels,Symbol(varname[i]),valn)
+            if haskey(labels,Symbol(varname[i]))
+                varname[i] = labels[Symbol(varname[i])]
+            else
+                varname[i] = string(varname[i])
             end
-            varname[i] = varlab(labels,Symbol(varname[i]))
         end
     end
     for i = 1:nrows
@@ -220,6 +219,10 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
             t.write(r,c+1,tdata.cols[1][i],formats[:or_fmt])
         end
 
+        # standard errors
+        if robust != nothing
+        end
+
         if ci == true
 
             if eform == true
@@ -265,17 +268,17 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString;
     t.merge_range(r,c+1,r,c+4,nobs(glmout),formats[:n_fmt_center])
 
     # degress of freedom
-    # r += 1
-    # t.write(r,c,"DF",formats[:model_name])
-    # t.merge_range(r,c+1,r,c+4,dof(glmout),formats[:n_fmt_center])
+    r += 1
+    t.write(r,c,"DF",formats[:model_name])
+    t.merge_range(r,c+1,r,c+4,dof(glmout),formats[:n_fmt_center])
 
     # R² or pseudo R²
     r += 1
     if isa(linkfun,LogitLink)
         t.write(r,c,"Pseudo R² (MacFadden)",formats[:model_name])
-        t.merge_range(r,c+1,r,c+4,macfadden(glmout),formats[:p_fmt_center])
+        t.merge_range(r,c+1,r,c+4,r2(glmout,:MacFadden),formats[:p_fmt_center])
         t.write(r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])
-        t.merge_range(r+1,c+1,r+1,c+4,nagelkerke(glmout),formats[:p_fmt_center])
+        t.merge_range(r+1,c+1,r+1,c+4,r2(GLM,:Nagelkerke),formats[:p_fmt_center])
 
         # -2 log-likelihood
         t.write(r+2,c,"-2 Log-Likelihood",formats[:model_name])
@@ -317,15 +320,16 @@ end
 function glmxls(glmout,
     wbook::AbstractString,
     wsheet::AbstractString;
-    labels::Union{Nothing,Label} = nothing,
+    labels = nothing,
     eform::Bool = false,
     ci = true,
     row = 0,
-    col = 0)
+    col = 0,
+    robust = nothing)
 
     xlsxwriter = pyimport("xlsxwriter")
 
-    glmxls(glmout,xlsxwriter.Workbook(wbook),wsheet,labels=labels,eform=eform,ci=ci,row=row,col=col)
+    glmxls(glmout,xlsxwriter.Workbook(wbook),wsheet,labels=labels,eform=eform,ci=ci,row=row,col=col,robust=robust)
 end
 
 
@@ -383,16 +387,10 @@ function bivariatexls(df::DataFrame,
     wbook::PyObject,
     wsheet::AbstractString;
     wt::Symbol = nothing,
-    labels::Label = nothing,
     row::Int = 0,
     col::Int = 0,
     column_percent::Bool = true,
     verbose::Bool = false)
-
-    # labels
-    # if labels == nothing && "Labels" in metadatakeys(df)
-    #     labels = load_labels(df)
-    # end
 
     # colvar has to be a CategoricalArray and must have 2 or more categories
     if isa(df[!,colvar], CategoricalArray) == false || length(levels(df[!,colvar])) < 2
@@ -427,41 +425,25 @@ function bivariatexls(df::DataFrame,
     t.set_column(c,c,40)
     t.set_column(c+1,c+(nlev+1)*2+1,9)
 
-    # create heading
+    # create header
     # column variable name
     # It uses three rows
     t.merge_range(r,c,r+2,c,"Variable",formats[:heading])
 
-    # 1st row = variable name
-    colvname = varlab(df,colvar)
-    t.merge_range(r,c+1,r,c+(nlev+1)*2+1,colvname,formats[:heading])
+    # header 1st row = variable name
+    t.merge_range(r,c+1,r,c+(nlev+1)*2+1,label(df,colvar),formats[:heading])
 
-    # 2nd and 3rd rows
+    # header 2nd and 3rd rows
     r += 1
 
     t.merge_range(r,1,r,2,"All",formats[:heading])
     t.write_string(r+1,1,"N",formats[:n_fmt_right])
     t.write_string(r+1,2,"(%)",formats[:pct_fmt_parens])
 
-    c = 3
-
-    # value labels for colvar
-    vals = vallab(df,colvar)
-
+    # 
+    c += 3
     for i = 1:nlev
-
-        # value label
-        # vals = string(colnms[i])
-        # if labels != nothing
-        #     vals = value_label(df,colvar,colnms[i])
-        # end
-        # println(colvar, "    ", colnms[i], "     ", vals[colnms[i]])
-        if vals != nothing && haskey(vals,colnms[i])
-            vlab = vals[colnms[i]]
-        else
-            vlab = string(colnms[i])
-        end
-        t.merge_range(r,c+(i-1)*2,r,c+(i-1)*2+1,vlab,formats[:heading])
+        t.merge_range(r,c+(i-1)*2,r,c+(i-1)*2+1,colnms[i],formats[:heading])
         t.write_string(r+1,c+(i-1)*2,"N",formats[:n_fmt_right])
         t.write_string(r+1,c+(i-1)*2+1,"(%)",formats[:pct_fmt_parens])
     end
@@ -470,7 +452,7 @@ function bivariatexls(df::DataFrame,
     t.merge_range(r,c+nlev*2,r+1,c+nlev*2,"P-Value",formats[:heading])
 
     # total
-    c = 0
+    c = col
     r += 2
     t.write_string(r,c,"All, n (Row %)",formats[:model_name])
     if wt == nothing
@@ -488,7 +470,7 @@ function bivariatexls(df::DataFrame,
     t.write(r,c+(nlev+1)*2+1,"",formats[:empty_border])
 
     # covariates
-    c = 0
+    c = col
     r += 1
     for varname in rowvars
 
@@ -496,15 +478,8 @@ function bivariatexls(df::DataFrame,
             println("Processing ",varname)
         end
 
-        # sum of rowvars must be non-zero
-        # if sum(length(skipmissing(df[varname]))) == 0
-        #     warn("`",varname,"` in `rowvars` is empty.")
-        #     continue
-        # end
-
-        # print the variable name
-        # vars = string(varname)
-        vars = varlab(df,varname)
+        # variable name
+        vars = label(df,varname)
 
         # determine if varname is categorical or continuous
         if isa(df2[!,varname], CategoricalArray) || eltype(df2[!,varname]) == String
@@ -562,13 +537,7 @@ function bivariatexls(df::DataFrame,
                 r += 1
                 for i = 1:length(rowval)
                     # row value
-                    # vals = string(rowval[i])
-
-                    # if labels != nothing
-                    #     vals = vallab(labels,varname,rowval[i])
-                    # end
-                    vals = string(vallab(labels,varname,rowval[i]))
-                    t.write_string(r,c,vals,formats[:varname_1indent])
+                    t.write_string(r,c,rowval[i],formats[:varname_1indent])
 
                     # row total
                     t.write(r,c+1,rowtot[i],formats[:n_fmt_right])
@@ -601,7 +570,7 @@ function bivariatexls(df::DataFrame,
         else
             # continuous variable
             df3=df2[completecases(df2[!,[varname]]),[varname,colvar]]
-            y = tabstat(df3, varname, colvar, table=false, labels=labels,wt=df3[wt])
+            y = tabstat(df3, varname, colvar, table=false, wt=df3[wt])
 
             # variable name
             t.write_string(r,c,string(vars,", mean (SD)"),formats[:model_name])
@@ -655,7 +624,6 @@ function bivariatexls(df::DataFrame,
     rowvars::Vector{Symbol},
     wbook::AbstractString,
     wsheet::AbstractString;
-    labels::Union{Nothing,Label} = nothing,
     row::Int = 0,
     col::Int = 0)
 
@@ -663,7 +631,7 @@ function bivariatexls(df::DataFrame,
 
     wb = xlsxwriter.Workbook(wbook)
 
-    bivariatexls(df,colvar,rowvars,wb,wsheet,labels=labels,row=row,col=col)
+    bivariatexls(df,colvar,rowvars,wb,wsheet,row=row,col=col)
 
     wb.close()
 end
@@ -722,7 +690,6 @@ function univariatexls(df::DataFrame,
     wbook::PyObject,
     wsheet::AbstractString;
     wt::Union{Nothing,Symbol} = nothing,
-    labels::Union{Nothing,Label}=nothing,
     row = 0,
     col = 0)
 
@@ -749,29 +716,6 @@ function univariatexls(df::DataFrame,
     for i in 1:24
         t.write_string(r+i,c,rownms[i],formats[:heading_left])
     end
-    # t.write_string(r+2,c,"N Miss",formats[:heading_left])
-    # t.write_string(r+3,c,"N Used",formats[:heading_left])
-    # t.write_string(r+4,c,"Sum",formats[:heading_left])
-    # t.write_string(r+5,c,"Mean",formats[:heading_left])
-    # t.write_string(r+6,c,"SD",formats[:heading_left])
-    # t.write_string(r+7,c,"Variance",formats[:heading_left])
-    # t.write_string(r+8,c,"Minimum",formats[:heading_left])
-    # t.write_string(r+9,c,"P25",formats[:heading_left])
-    # t.write_string(r+10,c,"Median",formats[:heading_left])
-    # t.write_string(r+11,c,"P75",formats[:heading_left])
-    # t.write_string(r+12,c,"Maximum",formats[:heading_left])
-    # t.write_string(r+13,c,"Skewness",formats[:heading_left])
-    # t.write_string(r+14,c,"Kurtosis",formats[:heading_left])
-    # t.write_string(r+15,c,"Smallest",formats[:heading_left])
-    # t.write_string(r+16,c,"",formats[:heading_left])
-    # t.write_string(r+17,c,"",formats[:heading_left])
-    # t.write_string(r+18,c,"",formats[:heading_left])
-    # t.write_string(r+19,c,"",formats[:heading_left])
-    # t.write_string(r+20,c,"Largest",formats[:heading_left])
-    # t.write_string(r+21,c,"",formats[:heading_left])
-    # t.write_string(r+22,c,"",formats[:heading_left])
-    # t.write_string(r+23,c,"",formats[:heading_left])
-    # t.write_string(r+24,c,"",formats[:heading_left])
 
     col = 1
     for vsym in contvars
@@ -789,12 +733,8 @@ function univariatexls(df::DataFrame,
         # non-missing values
         len = size(df,1) - count(ismissing, df[!,vsym])  # sum(ismissing.(df[!,vsym]) .== false)
 
-        # if there is a label dictionary, pick up the variable label
-        varstr = string(vsym)
-        if labels != nothing
-            varstr = varlab(labels,vsym)
-        end
-
+        # pick up the variable label
+        varstr = label(df,vsym)
         t.write_string(0,col,varstr,formats[:heading])
         u = Stella.univariate(df[!,vsym]) #,wt=df[wt])
         for j = 1:14
@@ -985,7 +925,6 @@ function dfxls(df::DataFrame,
 
     wb.close()
 end
-
 
 function newfilename(filen::AbstractString)
     while (isfile(filen))
