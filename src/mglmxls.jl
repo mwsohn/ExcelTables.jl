@@ -163,15 +163,10 @@ function mglmxls(glmout,
 
         # use labels if exist
         if labels != nothing
-            sv = Symbol(varname[i])
-            if vals[i] != ""
-                valn = vals[i] == "true" ? 1 : parse(Int,vals[i])
-                vals[i] = vallab(labels,sv,valn)
-            end
-            varname[i] = varlab(labels,sv)
+            varname[i] = labels[Symbol(varname[i])]
         end
-    end
-    for i = 1:nrows
+
+        # count the number of levels in a categorical variable
         nlev[i] = countlev(varname[i],varname)
     end
 
