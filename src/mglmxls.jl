@@ -49,11 +49,11 @@ function mglmxls(glmout,
     wbook::PyObject,
     wsheet::AbstractString;
     mtitle::Union{Vector,Nothing} = nothing,
-    labels::Union{Nothing,Label} = nothing,
     eform::Bool = false,
     ci = true,
     row = 0,
-    col = 0)
+    col = 0,
+    labels::Dict = nothing)
 
     num_models = length(glmout)
     otype = Vector(undef,num_models)
@@ -86,7 +86,7 @@ function mglmxls(glmout,
         # assign dependent variables
         for i=1:num_models
             ysim = glmout[i].mf.f.lhs.sym #terms.eterms[1]
-            mtitle[i] = labels != nothing && haskey(labels.var, ysim) ? varlab(labels,ysim) : string(ysim)
+            mtitle[i] = labels != nothing && haskey(labels, ysim) ? varlab(labels,ysim) : string(ysim)
         end
     end
 
@@ -134,11 +134,12 @@ function mglmxls(glmout,
         else
             tdata[i] = coeftable(glmout[i])
         end
-        tconfint[i] = hcat(tdata[i].cols[1], tdata[i].cols[1]) + tdata[i].cols[2] * quantile(Normal(), 0.025) * [1.0 -1.0]
+        tconfint[i] = confint(glmout[i]) # hcat(tdata[i].cols[1], tdata[i].cols[1]) + tdata[i].cols[2] * quantile(Normal(), 0.025) * [1.0 -1.0]
 
+        # build a vector of covariate names
         for nm in tdata[i].rownms
             if in(nm, covariates) == false
-                push!(covariates,nm)
+                push!(covariates,string(nm))
             end
         end
     end
@@ -153,10 +154,7 @@ function mglmxls(glmout,
     for i = 1:nrows
     	# variable name
         # parse varname to separate variable name from value
-        if occursin(" & ",covariates[i])
-            varname[i] = covariates[i]
-            vals[i] = ""
-        elseif occursin(":",covariates[i])
+        if occursin(":",covariates[i])
             (varname[i],vals[i]) = split(covariates[i],": ")
         else
             varname[i] = covariates[i]
@@ -313,26 +311,26 @@ function mglmxls(glmout,
 	
 	elseif !isa(glmout[i].model, CoxModel)
             if isa(linkfun[i],LogitLink)
-                # t.write(r,c,"Pseudo R² (MacFadden)",formats[:model_name])
-                # t.merge_range(r,c+1,r,c+4,macfadden(glmout[i]),formats[:p_fmt_center])
-                # t.write(r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])
-                # t.merge_range(r+1,c+1,r+1,c+4,nagelkerke(glmout[i]),formats[:p_fmt_center])
+                t.write(r,c,"Pseudo R² (MacFadden)",formats[:model_name])
+                t.merge_range(r,c+1,r,c+4,r2(glmout[i],:MacFadden),formats[:p_fmt_center])
+                t.write(r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])
+                t.merge_range(r+1,c+1,r+1,c+4,r2(glmout[i],Nagelkerke),formats[:p_fmt_center])
 
-                # # -2 log-likelihood
-                # t.write(r+2,c,"-2 Log-Likelihood",formats[:model_name])
-                # t.merge_range(r+2,c+1,r+2,c+4,deviance(glmout[i]),formats[:p_fmt_center])
+                # -2 log-likelihood
+                t.write(r+2,c,"-2 Log-Likelihood",formats[:model_name])
+                t.merge_range(r+2,c+1,r+2,c+4,deviance(glmout[i]),formats[:p_fmt_center])
 
-                # # Hosmer-Lemeshow GOF test
-                # t.write(r+3,c,"Hosmer-Lemeshow Chisq Test (df), p-value",formats[:model_name])
-                # hl = hltest(glmout[i])
-                # t.merge_range(r+3,c+1,r+3,c+4,string(round(hl[1],digits=4)," (",hl[2],"); p = ",round(hl[3],digits=4)),formats[:p_fmt_center])
+                # Hosmer-Lemeshow GOF test
+                t.write(r+3,c,"Hosmer-Lemeshow Chisq Test (df), p-value",formats[:model_name])
+                hl = hltest(glmout[i])
+                t.merge_range(r+3,c+1,r+3,c+4,string(round(hl[1],digits=4)," (",hl[2],"); p = ",round(hl[3],digits=4)),formats[:p_fmt_center])
 
-                # # ROC (c-statistic)
-                # t.write(r+4,c,"Area under the ROC Curve",formats[:model_name])
-                # _roc = auc(roc(glmout[i].model.rr.y,predict(glmout[i])))
-                # t.merge_range(r+4,c+1,r+4,c+4,round(_roc,digits=4),formats[:p_fmt_center])
+                # ROC (c-statistic)
+                t.write(r+4,c,"Area under the ROC Curve",formats[:model_name])
+                _roc = auc(roc(glmout[i].model.rr.y,predict(glmout[i])))
+                t.merge_range(r+4,c+1,r+4,c+4,round(_roc,digits=4),formats[:p_fmt_center])
 
-                # r += 5
+                r += 5
             end
 
             # AIC & BIC
