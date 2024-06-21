@@ -123,8 +123,9 @@ function mglmxls(glmout,
     r += 2
     c = col
 
-    # collate variables
+    # collate variables from multiple regressions
     covariates = Vector{String}()
+    vvalues = Dict()
     tdata = Vector(undef,num_models)
     tconfint = Vector(undef,num_models)
 
@@ -138,8 +139,21 @@ function mglmxls(glmout,
 
         # build a vector of covariate names
         for nm in tdata[i].rownms
-            if in(nm, covariates) == false
-                push!(covariates,string(nm))
+            if occursin(":",nm)
+                (varname,val) = split(nm,": ")
+            else
+                varname = nm
+                val = ""
+            end
+            if in(varname, covariates) == false
+                push!(covariates,string(varname))
+            end
+            if value != ""
+                if haskey(vvalues,varname)
+                    vvalues[varname] = OrderedSet(vcat(collect(vvalues[varname]),val))
+                else
+                    vvalues[varname] = OrderedSet([val])
+                end
             end
         end
     end
@@ -151,7 +165,7 @@ function mglmxls(glmout,
     nlev = zeros(Int,nrows)
     npred = [dof(m) for m in glmout]
 
-    for i = 1:nrows
+    for i = 1:length(covariates)
     	# variable name
         # parse varname to separate variable name from value
         if occursin(":",covariates[i])
