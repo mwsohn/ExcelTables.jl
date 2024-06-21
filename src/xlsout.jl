@@ -90,7 +90,7 @@ julia> glmxls(ols1,"test_workbook.xlsx","OLS1")
 ```
 
 """
-function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels = nothing,
+function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels::Dict = nothing,
     eform::Bool = false, ci = true, row = 0, col = 0, robust::Symbol = nothing)
 
     if (typeof(glmout) <: StatsModels.TableRegressionModel) == false
@@ -320,7 +320,7 @@ end
 function glmxls(glmout,
     wbook::AbstractString,
     wsheet::AbstractString;
-    labels = nothing,
+    labels::Dict = nothing,
     eform::Bool = false,
     ci = true,
     row = 0,
