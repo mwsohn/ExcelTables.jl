@@ -776,13 +776,13 @@ function univariatexls(df::DataFrame,
     end
 end
 function univariatexls(df::DataFrame,contvars::Vector{Symbol},wbook::AbstractString,wsheet::AbstractString;
-    wt::Union{Nothing,Symbol} = nothing,labels::Union{Nothing,Label}=nothing, row = 0, col = 0)
+    wt::Union{Nothing,Symbol} = nothing,row = 0, col = 0)
 
     xlsxwriter=pyimport("xlsxwriter")
 
     wb = wlsxwriter.Workbook(wbook)
 
-    univariatexls(df,contvars,wb,wsheet,wt=wt,labels=labels,row=row,col=col)
+    univariatexls(df,contvars,wb,wsheet,wt=wt,row=row,col=col)
 
     wb.close()
 end
