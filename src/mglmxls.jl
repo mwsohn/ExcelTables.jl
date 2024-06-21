@@ -371,7 +371,7 @@ function mglmxls(glmout,
     wbook::AbstractString,
     wsheet::AbstractString;
     mtitle::Union{String,Nothing} = nothing,
-    labels::Union{Nothing,Label} = nothing,
+    labels::Dict = nothing,
     eform::Bool = false,
     ci = true,
     row = 0,
