@@ -851,14 +851,14 @@ function dfxls(df::DataFrame,
 
     # Eltype
     typ = Vector{DataType}(undef,size(df,2))
-    for i=1:size(df,2)
-        if typeof(df[i]) <: CategoricalArray
-            typ[i] = eltype(df[i].pool.index)
+    for i=1:ncol(df)
+        if typeof(df[!,i]) <: CategoricalArray
+            typ[i] = eltype(df[!,i].pool.index)
         else
-            typ[i] = nonmissingtype(eltype(df[i]))
+            typ[i] = nonmissingtype(eltype(df[!,i]))
         end
     end
-    varnames = names(df)
+    varnames = propertynames(df)
 
     # if nrows = 0, output the full data set
     if nrows == 0
