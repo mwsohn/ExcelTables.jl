@@ -334,7 +334,7 @@ end
 
 
 """
-    bivariatexls(df::DataFrame,colvar::Symbol,rowvars::Vector{Symbol},workbook::PyObject,worksheet::AbstractString; labels::Union{Nothing,Label}=nothing,row=0,col=0)
+    bivariatexls(df::DataFrame,colvar::Symbol,rowvars::Vector{Symbol},workbook::PyObject,worksheet::AbstractString; row=0,col=0,column_percent = true)
 
  Creates bivariate statistics and appends it in a nice tabular format to an existing workbook.
  To use this function, `PyCall` is required with a working version python and
@@ -378,7 +378,7 @@ Alternatively, one can create a spreadsheet file directly. `PyCall` or `@pyimpor
 does not need to be called before the function.
 
 ```
-julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx","Bivariate",labels = label)
+julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx","Bivariate")
 ```
 """
 function bivariatexls(df::DataFrame,
