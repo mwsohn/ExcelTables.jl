@@ -381,7 +381,7 @@ does not need to be called before the function.
 julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx","Bivariate")
 ```
 """
-function bivariatexls(df::DataFrame,
+function bivariatexls(df::AbstractDataFrame,
     colvar::Symbol,
     rowvars::Vector{Symbol},
     wbook::PyObject,
@@ -619,7 +619,7 @@ function bivariatexls(df::DataFrame,
         end
     end
 end
-function bivariatexls(df::DataFrame,
+function bivariatexls(df::AbstractDataFrame,
     colvar::Symbol,
     rowvars::Vector{Symbol},
     wsheet::AbstractString;
