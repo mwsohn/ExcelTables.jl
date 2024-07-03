@@ -619,22 +619,22 @@ function bivariatexls(df::DataFrame,
         end
     end
 end
-function bivariatexls(df::DataFrame,
-    colvar::Symbol,
-    rowvars::Vector{Symbol},
-    wbook::AbstractString,
-    wsheet::AbstractString;
-    row::Int = 0,
-    col::Int = 0)
+# function bivariatexls(df::DataFrame,
+#     colvar::Symbol,
+#     rowvars::Vector{Symbol},
+#     wbook::AbstractString,
+#     wsheet::AbstractString;
+#     row::Int = 0,
+#     col::Int = 0)
 
-    xlsxwriter = pyimport("xlsxwriter")
+#     xlsxwriter = pyimport("xlsxwriter")
 
-    wb = xlsxwriter.Workbook(wbook)
+#     wb = xlsxwriter.Workbook(wbook)
 
-    bivariatexls(df,colvar,rowvars,wb,wsheet,row=row,col=col)
+#     bivariatexls(df,colvar,rowvars,wb,wsheet,row=row,col=col)
 
-    wb.close()
-end
+#     wb.close()
+# end
 
 
 """
