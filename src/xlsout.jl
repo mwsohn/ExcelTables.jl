@@ -348,7 +348,6 @@ end
     a r x c table with cell counts and row percentages will be output with a p-value based on a chi-square test.
 - `workbook`: a returned value from xlsxwriter.Workbook() function (see an example below)
 - `worksheet`: a string for the worksheet name
-- `labels`: an option to specify a `Label` object (see an example below)
 - `row`: specify the row of the workbook to start the output table (default = 0 (for row 1))
 - `col`: specify the column of the workbook to start the output table (default = 0 (for column A))
 - `column_percent`: set this to `false` if you want row percentages in the output table (default = true)
@@ -368,7 +367,7 @@ PyObject <xlsxwriter.workbook.Workbook object at 0x000000002A628E80>
 
 julia> glmxls(ols1,wb,"OLS1",labels = label)
 
-julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate",labels = label)
+julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate")
 
 Julia> wb.close()
 ```
@@ -382,8 +381,8 @@ julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx
 ```
 """
 function bivariatexls(df::AbstractDataFrame,
-    colvar::Symbol,
-    rowvars::Vector{Symbol},
+    colvar::Union{Symbol,String},
+    rowvars::Vector{Union{Symbol,String}},
     wbook::PyObject,
     wsheet::AbstractString;
     wt::Symbol = nothing,
@@ -619,9 +618,10 @@ function bivariatexls(df::AbstractDataFrame,
         end
     end
 end
-function bivariatexls(df::AbstractDataFrame,
-    colvar::Symbol,
-    rowvars::Vector{Symbol},
+function bivariatexls(_df::AbstractDataFrame,
+    colvar::Union{Symbol,String},
+    rowvars::Vector{Union{Symbol,String}},
+    wbook::AbstractString,
     wsheet::AbstractString;
     row::Int = 0,
     col::Int = 0)
@@ -630,7 +630,7 @@ function bivariatexls(df::AbstractDataFrame,
 
     wb = xlsxwriter.Workbook(wbook)
 
-    bivariatexls(df,colvar,rowvars,wb,wsheet,row=row,col=col)
+    bivariatexls(_df,colvar,rowvars,wb,wsheet,row=row,col=col)
 
     wb.close()
 end
