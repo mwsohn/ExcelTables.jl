@@ -381,8 +381,8 @@ julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx
 ```
 """
 function bivariatexls(df::AbstractDataFrame,
-    colvar::Union{Symbol,String},
-    rowvars::Vector{Union{Symbol,String}},
+    colvar::Symbol,
+    rowvars::Vector{Symbol},
     wbook::PyObject,
     wsheet::AbstractString;
     wt::Symbol = nothing,
@@ -619,8 +619,8 @@ function bivariatexls(df::AbstractDataFrame,
     end
 end
 function bivariatexls(_df::AbstractDataFrame,
-    colvar::Union{Symbol,String},
-    rowvars::Vector{Union{Symbol,String}},
+    colvar::Symbol,
+    rowvars::Vector{Symbol},
     wbook::AbstractString,
     wsheet::AbstractString;
     row::Int = 0,
