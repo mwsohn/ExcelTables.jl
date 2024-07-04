@@ -380,7 +380,7 @@ does not need to be called before the function.
 julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx","Bivariate")
 ```
 """
-function bivariatexls(df, colvar, rowvars, wbook::PyObject, wsheet::AbstractString) #;
+function bivariatexls(df::AbstractDataFrame, colvar, rowvars, wbook::PyObject, wsheet::AbstractString) #;
     # wt::Symbol = nothing, row::Int = 0, col::Int = 0, column_percent::Bool = true, verbose::Bool = false)
 
     wt = nothing
@@ -416,6 +416,7 @@ function bivariatexls(df, colvar, rowvars, wbook::PyObject, wsheet::AbstractStri
     end
     nlev = length(collev.array)
     colnms = names(collev,1)
+    println("=================================",colnms)
     coltot = sum(collev.array,dims=1)
 
     # set column widths
