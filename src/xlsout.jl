@@ -380,7 +380,7 @@ does not need to be called before the function.
 julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx","Bivariate")
 ```
 """
-function bivariatexls(df::AbstractDataFrame, colvar, rowvars, wbook::PyObject, wsheet::AbstractString) #;
+function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Symbol}, wbook::PyObject, wsheet::AbstractString) #;
     # wt::Symbol = nothing, row::Int = 0, col::Int = 0, column_percent::Bool = true, verbose::Bool = false)
 
     wt = nothing
@@ -407,215 +407,215 @@ function bivariatexls(df::AbstractDataFrame, colvar, rowvars, wbook::PyObject, w
     # drop NAs in colvar
     df2 = df[completecases(df[!,[colvar]]),:]
 
-    # number of columns
-    # column values
-    if wt == nothing
-        collev = freqtable(df2,colvar,skipmissing=true)
-    else
-        collev = freqtable(df2,colvar,skipmissing=true,weights=df2[wt])
-    end
-    nlev = length(collev.array)
-    colnms = names(collev,1)
-    println("=================================",colnms)
-    coltot = sum(collev.array,dims=1)
+    # # number of columns
+    # # column values
+    # if wt == nothing
+    #     collev = freqtable(df2,colvar,skipmissing=true)
+    # else
+    #     collev = freqtable(df2,colvar,skipmissing=true,weights=df2[wt])
+    # end
+    # nlev = length(collev.array)
+    # colnms = names(collev,1)
+    # println("=================================",colnms)
+    # coltot = sum(collev.array,dims=1)
 
-    # set column widths
-    t.set_column(c,c,40)
-    t.set_column(c+1,c+(nlev+1)*2+1,9)
+    # # set column widths
+    # t.set_column(c,c,40)
+    # t.set_column(c+1,c+(nlev+1)*2+1,9)
 
-    # create header
-    # column variable name
-    # It uses three rows
-    t.merge_range(r,c,r+2,c,"Variable",formats[:heading])
+    # # create header
+    # # column variable name
+    # # It uses three rows
+    # t.merge_range(r,c,r+2,c,"Variable",formats[:heading])
 
-    # header 1st row = variable name
-    t.merge_range(r,c+1,r,c+(nlev+1)*2+1,label(df,colvar),formats[:heading])
+    # # header 1st row = variable name
+    # t.merge_range(r,c+1,r,c+(nlev+1)*2+1,label(df,colvar),formats[:heading])
 
-    # header 2nd and 3rd rows
-    r += 1
+    # # header 2nd and 3rd rows
+    # r += 1
 
-    t.merge_range(r,1,r,2,"All",formats[:heading])
-    t.write_string(r+1,1,"N",formats[:n_fmt_right])
-    t.write_string(r+1,2,"(%)",formats[:pct_fmt_parens])
+    # t.merge_range(r,1,r,2,"All",formats[:heading])
+    # t.write_string(r+1,1,"N",formats[:n_fmt_right])
+    # t.write_string(r+1,2,"(%)",formats[:pct_fmt_parens])
 
-    # 
-    c += 3
-    for i = 1:nlev
-        t.merge_range(r,c+(i-1)*2,r,c+(i-1)*2+1,colnms[i],formats[:heading])
-        t.write_string(r+1,c+(i-1)*2,"N",formats[:n_fmt_right])
-        t.write_string(r+1,c+(i-1)*2+1,"(%)",formats[:pct_fmt_parens])
-    end
+    # # 
+    # c += 3
+    # for i = 1:nlev
+    #     t.merge_range(r,c+(i-1)*2,r,c+(i-1)*2+1,colnms[i],formats[:heading])
+    #     t.write_string(r+1,c+(i-1)*2,"N",formats[:n_fmt_right])
+    #     t.write_string(r+1,c+(i-1)*2+1,"(%)",formats[:pct_fmt_parens])
+    # end
 
-    # P-value
-    t.merge_range(r,c+nlev*2,r+1,c+nlev*2,"P-Value",formats[:heading])
+    # # P-value
+    # t.merge_range(r,c+nlev*2,r+1,c+nlev*2,"P-Value",formats[:heading])
 
-    # total
-    c = col
-    r += 2
-    t.write_string(r,c,"All, n (Row %)",formats[:model_name])
-    if wt == nothing
-        x = freqtable(df2,colvar,skipmissing=true)
-    else
-        x = freqtable(df2,colvar,skipmissing=true,weights=df2[wt])
-    end
-    tot = sum(x)
-    t.write(r,c+1,tot,formats[:n_fmt_right])
-    t.write(r,c+2,1.0,formats[:pct_fmt_parens])
-    for i = 1:nlev
-        t.write(r,c+i*2+1,x.array[i],formats[:n_fmt_right])
-        t.write(r,c+i*2+2,x.array[i]/tot,formats[:pct_fmt_parens])
-    end
-    t.write(r,c+(nlev+1)*2+1,"",formats[:empty_border])
+    # # total
+    # c = col
+    # r += 2
+    # t.write_string(r,c,"All, n (Row %)",formats[:model_name])
+    # if wt == nothing
+    #     x = freqtable(df2,colvar,skipmissing=true)
+    # else
+    #     x = freqtable(df2,colvar,skipmissing=true,weights=df2[wt])
+    # end
+    # tot = sum(x)
+    # t.write(r,c+1,tot,formats[:n_fmt_right])
+    # t.write(r,c+2,1.0,formats[:pct_fmt_parens])
+    # for i = 1:nlev
+    #     t.write(r,c+i*2+1,x.array[i],formats[:n_fmt_right])
+    #     t.write(r,c+i*2+2,x.array[i]/tot,formats[:pct_fmt_parens])
+    # end
+    # t.write(r,c+(nlev+1)*2+1,"",formats[:empty_border])
 
-    # covariates
-    c = col
-    r += 1
-    for varname in rowvars
+    # # covariates
+    # c = col
+    # r += 1
+    # for varname in rowvars
 
-        if verbose == true
-            println("Processing ",varname)
-        end
+    #     if verbose == true
+    #         println("Processing ",varname)
+    #     end
 
-        # variable name
-        vars = label(df,varname)
+    #     # variable name
+    #     vars = label(df,varname)
 
-        # determine if varname is categorical or continuous
-        if isa(df2[!,varname], CategoricalArray) || eltype(df2[!,varname]) == String
+    #     # determine if varname is categorical or continuous
+    #     if isa(df2[!,varname], CategoricalArray) || eltype(df2[!,varname]) == String
 
-            # categorial
-            df3=df2[completecases(df2[:,[varname]]),[varname,colvar]]
-            if wt == nothing
-                x = freqtable(df3,varname,colvar,skipmissing=true)
-            else
-                x = freqtable(df3,varname,colvar,skipmissing=true,weights=df3[wt])
-            end
-            rowval = names(x,1)
-            rowtot = sum(x.array,dims=2)
-            coltot = sum(x.array,dims=1)
+    #         # categorial
+    #         df3=df2[completecases(df2[:,[varname]]),[varname,colvar]]
+    #         if wt == nothing
+    #             x = freqtable(df3,varname,colvar,skipmissing=true)
+    #         else
+    #             x = freqtable(df3,varname,colvar,skipmissing=true,weights=df3[wt])
+    #         end
+    #         rowval = names(x,1)
+    #         rowtot = sum(x.array,dims=2)
+    #         coltot = sum(x.array,dims=1)
 
-            # variable name
-            # if there only two levels and one of the values is 1 or true
-            # and the other values is 0 or false,
-            # just output the frequency and percentage of the 1/true row
+    #         # variable name
+    #         # if there only two levels and one of the values is 1 or true
+    #         # and the other values is 0 or false,
+    #         # just output the frequency and percentage of the 1/true row
 
-            # variable name
-            t.write_string(r,c,vars,formats[:model_name])
+    #         # variable name
+    #         t.write_string(r,c,vars,formats[:model_name])
 
-            # two levels with [0,1] or [false,true]
-            if length(rowval) <= 2 && rowval in ([1],[true],["Yes"],[0,1],[false,true],["No","Yes"])
+    #         # two levels with [0,1] or [false,true]
+    #         if length(rowval) <= 2 && rowval in ([1],[true],["Yes"],[0,1],[false,true],["No","Yes"])
 
-                nrow = length(rowval) 
-                # row total
-                t.write(r,c+1,rowtot[nrow],formats[:n_fmt_right])
-                t.write(r,c+2,rowtot[nrow]/tot,formats[:pct_fmt_parens])
+    #             nrow = length(rowval) 
+    #             # row total
+    #             t.write(r,c+1,rowtot[nrow],formats[:n_fmt_right])
+    #             t.write(r,c+2,rowtot[nrow]/tot,formats[:pct_fmt_parens])
 
-                for j = 1:nlev
-                    t.write(r,c+j*2+1,x.array[nrow,j],formats[:n_fmt_right])
-                    if column_percent
-                        t.write(r,c+j*2+2, coltot[j] > 0 ? x.array[nrow,j]/coltot[j] : "",formats[:pct_fmt_parens])
-                    else # elseif rowtot[2] > 0
-                        t.write(r,c+j*2+2, rowtot[nrow] > 0 ? x.array[nrow,j]/rowtot[nrow] : "",formats[:pct_fmt_parens])
-                    end
-                end
-                pval = pvalue(ChisqTest(x.array))
-                if isnan(pval) || isinf(pval)
-                    pval = ""
-                elseif pval < 0.001
-                    pval = "< 0.001"
-                end
-                t.write(r,c+(nlev+1)*2+1, pval,formats[:p_fmt])
-                r += 1
-            else
-                for i = 1:nlev+1
-                    t.write_string(r,c+(i-1)*2+1,"",formats[:empty_right])
-                    t.write_string(r,c+(i-1)*2+2,"",formats[:empty_left])
-                end
-                t.write_string(r,c+(nlev+1)*2+1,"",formats[:empty_border])
+    #             for j = 1:nlev
+    #                 t.write(r,c+j*2+1,x.array[nrow,j],formats[:n_fmt_right])
+    #                 if column_percent
+    #                     t.write(r,c+j*2+2, coltot[j] > 0 ? x.array[nrow,j]/coltot[j] : "",formats[:pct_fmt_parens])
+    #                 else # elseif rowtot[2] > 0
+    #                     t.write(r,c+j*2+2, rowtot[nrow] > 0 ? x.array[nrow,j]/rowtot[nrow] : "",formats[:pct_fmt_parens])
+    #                 end
+    #             end
+    #             pval = pvalue(ChisqTest(x.array))
+    #             if isnan(pval) || isinf(pval)
+    #                 pval = ""
+    #             elseif pval < 0.001
+    #                 pval = "< 0.001"
+    #             end
+    #             t.write(r,c+(nlev+1)*2+1, pval,formats[:p_fmt])
+    #             r += 1
+    #         else
+    #             for i = 1:nlev+1
+    #                 t.write_string(r,c+(i-1)*2+1,"",formats[:empty_right])
+    #                 t.write_string(r,c+(i-1)*2+2,"",formats[:empty_left])
+    #             end
+    #             t.write_string(r,c+(nlev+1)*2+1,"",formats[:empty_border])
 
-                r += 1
-                for i = 1:length(rowval)
-                    # row value
-                    t.write_string(r,c,rowval[i],formats[:varname_1indent])
+    #             r += 1
+    #             for i = 1:length(rowval)
+    #                 # row value
+    #                 t.write_string(r,c,rowval[i],formats[:varname_1indent])
 
-                    # row total
-                    t.write(r,c+1,rowtot[i],formats[:n_fmt_right])
-                    t.write(r,c+2,rowtot[i]/tot,formats[:pct_fmt_parens])
+    #                 # row total
+    #                 t.write(r,c+1,rowtot[i],formats[:n_fmt_right])
+    #                 t.write(r,c+2,rowtot[i]/tot,formats[:pct_fmt_parens])
 
-                    for j = 1:nlev
-                        t.write(r,c+j*2+1,x.array[i,j],formats[:n_fmt_right])
-                        if column_percent
-                            t.write(r,c+j*2+2,coltot[j] > 0 ? x.array[i,j]/coltot[j] : "",formats[:pct_fmt_parens])
-                        else
-                            t.write(r,c+j*2+2,rowtot[i] > 0 ? x.array[i,j]/rowtot[i] : "",formats[:pct_fmt_parens])
-                        end
-                    end
-                    # p-value - output only once
-                    pval = pvalue(ChisqTest(x.array))
+    #                 for j = 1:nlev
+    #                     t.write(r,c+j*2+1,x.array[i,j],formats[:n_fmt_right])
+    #                     if column_percent
+    #                         t.write(r,c+j*2+2,coltot[j] > 0 ? x.array[i,j]/coltot[j] : "",formats[:pct_fmt_parens])
+    #                     else
+    #                         t.write(r,c+j*2+2,rowtot[i] > 0 ? x.array[i,j]/rowtot[i] : "",formats[:pct_fmt_parens])
+    #                     end
+    #                 end
+    #                 # p-value - output only once
+    #                 pval = pvalue(ChisqTest(x.array))
 
-                    if isnan(pval) || isinf(pval)
-                        pval = ""
-                    elseif pval < 0.001
-                        pval = "< 0.001"
-                    end
-                    if length(rowval) == 1
-                        t.write(r,c+(nlev+1)*2,pval,formats[:p_fmt])
-                    elseif i == 1
-                        t.merge_range(r,c+(nlev+1)*2+1,r+length(rowval)-1,c+(nlev+1)*2+1,pval,formats[:p_fmt])
-                    end
-                    r += 1
-                end
-            end
-        else
-            # continuous variable
-            df3=df2[completecases(df2[!,[varname]]),[varname,colvar]]
-            y = tabstat(df3, varname, colvar, table=false, wt=df3[wt])
+    #                 if isnan(pval) || isinf(pval)
+    #                     pval = ""
+    #                 elseif pval < 0.001
+    #                     pval = "< 0.001"
+    #                 end
+    #                 if length(rowval) == 1
+    #                     t.write(r,c+(nlev+1)*2,pval,formats[:p_fmt])
+    #                 elseif i == 1
+    #                     t.merge_range(r,c+(nlev+1)*2+1,r+length(rowval)-1,c+(nlev+1)*2+1,pval,formats[:p_fmt])
+    #                 end
+    #                 r += 1
+    #             end
+    #         end
+    #     else
+    #         # continuous variable
+    #         df3=df2[completecases(df2[!,[varname]]),[varname,colvar]]
+    #         y = tabstat(df3, varname, colvar, table=false, wt=df3[wt])
 
-            # variable name
-            t.write_string(r,c,string(vars,", mean (SD)"),formats[:model_name])
+    #         # variable name
+    #         t.write_string(r,c,string(vars,", mean (SD)"),formats[:model_name])
 
-            # All
-            tmpvec = collect(skipmissing(df3[!,varname]))
-            if length(tmpvec) == 0
-                amean = ""
-                astd = ""
-            else
-                amean = mean(tmpvec)
-                if isnan(amean)
-                    amean = ""
-                end
-                astd = std(tmpvec)
-                if isnan(astd)
-                    astd = ""
-                end
-            end
-            t.write(r,c+1,amean,formats[:f_fmt_right])
-            t.write(r,c+2,astd,formats[:f_fmt_left_parens])
+    #         # All
+    #         tmpvec = collect(skipmissing(df3[!,varname]))
+    #         if length(tmpvec) == 0
+    #             amean = ""
+    #             astd = ""
+    #         else
+    #             amean = mean(tmpvec)
+    #             if isnan(amean)
+    #                 amean = ""
+    #             end
+    #             astd = std(tmpvec)
+    #             if isnan(astd)
+    #                 astd = ""
+    #             end
+    #         end
+    #         t.write(r,c+1,amean,formats[:f_fmt_right])
+    #         t.write(r,c+2,astd,formats[:f_fmt_left_parens])
 
-            # colvar levels
-            for i = 1:nlev
-                if i <= size(y,1) && y[i,:N] > 1
-                    t.write(r,c+i*2+1,y[i,:mean],formats[:f_fmt_right])
-                    t.write(r,c+i*2+2,y[i,:sd],formats[:f_fmt_left_parens])
-                else
-                    t.write(r,c+i*2+1,"",formats[:f_fmt_right])
-                    t.write(r,c+i*2+2,"",formats[:f_fmt_left_parens])
-                end
-            end
-            if size(y,1) > 1
-                pval = Stella.anova(df3,varname,colvar; pval=true)
-                if isnan(pval) || isinf(pval)
-                    pval = ""
-                elseif pval < 0.001
-                    pval = "< 0.001"
-                end
-                t.write(r,c+(nlev+1)*2+1,pval,formats[:p_fmt])
-            else
-                t.write(r,c+(nlev+1)*2+1,"",formats[:p_fmt])
-            end
+    #         # colvar levels
+    #         for i = 1:nlev
+    #             if i <= size(y,1) && y[i,:N] > 1
+    #                 t.write(r,c+i*2+1,y[i,:mean],formats[:f_fmt_right])
+    #                 t.write(r,c+i*2+2,y[i,:sd],formats[:f_fmt_left_parens])
+    #             else
+    #                 t.write(r,c+i*2+1,"",formats[:f_fmt_right])
+    #                 t.write(r,c+i*2+2,"",formats[:f_fmt_left_parens])
+    #             end
+    #         end
+    #         if size(y,1) > 1
+    #             pval = Stella.anova(df3,varname,colvar; pval=true)
+    #             if isnan(pval) || isinf(pval)
+    #                 pval = ""
+    #             elseif pval < 0.001
+    #                 pval = "< 0.001"
+    #             end
+    #             t.write(r,c+(nlev+1)*2+1,pval,formats[:p_fmt])
+    #         else
+    #             t.write(r,c+(nlev+1)*2+1,"",formats[:p_fmt])
+    #         end
 
-            r += 1
-        end
-    end
+    #         r += 1
+    #     end
+    # end
 end
 # function bivariatexls(_df::AbstractDataFrame,
 #     colvar::Symbol,
