@@ -380,16 +380,8 @@ does not need to be called before the function.
 julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx","Bivariate")
 ```
 """
-function bivariatexls(df::AbstractDataFrame,
-    colvar::Symbol,
-    rowvars::Vector{Symbol},
-    wbook::PyObject,
-    wsheet::AbstractString;
-    wt::Symbol = nothing,
-    row::Int = 0,
-    col::Int = 0,
-    column_percent::Bool = true,
-    verbose::Bool = false)
+function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Symbol}, wbook::PyObject, wsheet::AbstractString;
+    wt::Symbol = nothing, row::Int = 0, col::Int = 0, column_percent::Bool = true, verbose::Bool = false)
 
     # colvar has to be a CategoricalArray and must have 2 or more categories
     if isa(df[!,colvar], CategoricalArray) == false || length(levels(df[!,colvar])) < 2
@@ -618,22 +610,22 @@ function bivariatexls(df::AbstractDataFrame,
         end
     end
 end
-function bivariatexls(_df::AbstractDataFrame,
-    colvar::Symbol,
-    rowvars::Vector{Symbol},
-    wbook::AbstractString,
-    wsheet::AbstractString;
-    row::Int = 0,
-    col::Int = 0)
+# function bivariatexls(_df::AbstractDataFrame,
+#     colvar::Symbol,
+#     rowvars::Vector{Symbol},
+#     wbook::AbstractString,
+#     wsheet::AbstractString;
+#     row::Int = 0,
+#     col::Int = 0)
 
-    xlsxwriter = pyimport("xlsxwriter")
+#     xlsxwriter = pyimport("xlsxwriter")
 
-    wb = xlsxwriter.Workbook(wbook)
+#     wb = xlsxwriter.Workbook(wbook)
 
-    bivariatexls(_df,colvar,rowvars,wb,wsheet,row=row,col=col)
+#     bivariatexls(_df,colvar,rowvars,wb,wsheet,row=row,col=col)
 
-    wb.close()
-end
+#     wb.close()
+# end
 
 
 """
