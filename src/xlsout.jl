@@ -380,7 +380,7 @@ does not need to be called before the function.
 julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx","Bivariate")
 ```
 """
-function bivariatexls(df::AbstractDataFrame, colvar, rowvars, wbook::PyObject, wsheet::AbstractString) #;
+function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Symbol}, wbook::PyObject, wsheet::AbstractString) 
     # wt::Symbol = nothing, row::Int = 0, col::Int = 0, column_percent::Bool = true, verbose::Bool = false)
 
     wt = nothing
@@ -568,7 +568,7 @@ function bivariatexls(df::AbstractDataFrame, colvar, rowvars, wbook::PyObject, w
         else
             # continuous variable
             df3=df2[completecases(df2[!,[varname]]),[varname,colvar]]
-            y = tabstat(df3, varname, colvar, table=false, wt=df3[wt])
+            y = tabstat(df3, varname, colvar, table=false) #, wt=df3[wt])
 
             # variable name
             t.write_string(r,c,string(vars,", mean (SD)"),formats[:model_name])
