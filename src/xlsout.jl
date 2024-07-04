@@ -405,19 +405,19 @@ function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Sym
     c = col
 
     # drop NAs in colvar
-    df2 = df[completecases(df[!,[colvar]]),:]
+    df2 = df[completecases(df[!,[colvar]]),:];
 
-    # # number of columns
-    # # column values
-    # if wt == nothing
-    #     collev = freqtable(df2,colvar,skipmissing=true)
-    # else
-    #     collev = freqtable(df2,colvar,skipmissing=true,weights=df2[wt])
-    # end
-    # nlev = length(collev.array)
-    # colnms = names(collev,1)
-    # println("=================================",colnms)
-    # coltot = sum(collev.array,dims=1)
+    # number of columns
+    # column values
+    if wt == nothing
+        collev = freqtable(df2,colvar,skipmissing=true)
+    else
+        collev = freqtable(df2,colvar,skipmissing=true,weights=df2[wt])
+    end
+    nlev = length(collev.array)
+    colnms = names(collev,1)
+    println("=================================",colnms)
+    coltot = sum(collev.array,dims=1)
 
     # # set column widths
     # t.set_column(c,c,40)
