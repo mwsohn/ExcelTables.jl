@@ -602,8 +602,8 @@ function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Sym
                 end
             end
             if size(y,1) > 1
-                pval = Stella.anova(df3,varname,colvar; pval=true)
-                if isnan(pval[4]) || isinf(pval[4])
+                pval = Stella.anova(df3,varname,colvar; pval=true)[4]
+                if isnan(pval) || isinf(pval)
                     pval = ""
                 elseif pval < 0.001
                     pval = "< 0.001"
