@@ -415,7 +415,8 @@ function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Sym
         collev = freqtable(df2,colvar,skipmissing=true,weights=df2[wt])
     end
     nlev = length(collev.array)
-    colnms = first.(sort(collect(df[!,colvar].pool.invindex), by = x -> x.second))
+    tmpnms = names(collev)[1]
+    colnms = Vector{CategoricalArrays.leveltype(tmpnms)}(tmpnms)
     # println("=================================",colnms)
     coltot = sum(collev.array,dims=1)
 
@@ -489,7 +490,8 @@ function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Sym
             else
                 x = freqtable(df3,varname,colvar,skipmissing=true,weights=df3[wt])
             end
-            rowval = first.(sort(collect(names(x,1).pool.invindex), by = x -> x.second))
+            rtmpnms = names(x,1)[1]
+            rowval = Vector{CategoricalArrays.leveltype(rtmpnms)}(rtmpnms)
             rowtot = sum(x.array,dims=2)
             coltot = sum(x.array,dims=1)
 
