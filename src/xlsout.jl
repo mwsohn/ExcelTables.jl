@@ -44,6 +44,19 @@ end
 #     return StatsBase.r2(glmout,:McFadden)
 # end
 
+function trconfint(m; alpha = 0.05)
+    est = coef(m)
+    df = nobs(m) - dof(m)
+    if typeof(m.model) <: LinearModel
+        se = stderror(HC1(), m)
+        cv = quantile.(TDist(71), [alpha / 2, 1 - alpha / 2])
+    else # GLM model
+        se = stderror(HC1(), m)
+        cv = quantile.(Normal(), [alpha/2, 1 - alpha/2])
+    end
+    return hcat(est .+ se .* cv[1], est .+ se .* cv[2])
+end
+
 
 """
     glmxls(glmout::DataFrames.DataFrameRegressionModel, workbook::PyObject, worksheet::AbstractString; eform=false,ci=true, row = 0, col =0)
@@ -91,16 +104,18 @@ julia> glmxls(ols1,"test_workbook.xlsx","OLS1")
 
 """
 function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels::Dict = nothing,
-    eform::Bool = false, ci = true, row = 0, col = 0, robust::Symbol = nothing)
+    eform::Bool = false, ci = true, row = 0, col = 0, robust::Function = nothing)
 
     if (typeof(glmout) <: StatsModels.TableRegressionModel) == false
-        error("This is not a regression model output.")
+        error("This is not a TableRegressionModel output.")
     end
 
+    lm = 0
     if isa(glmout.model,GeneralizedLinearModel)
         distrib = glmout.model.rr.d
         linkfun = Link(glmout.model.rr)
     else
+        lm = 1 # this is a linear model
         distrib = nothing
         linkfun = nothing
     end
@@ -134,8 +149,12 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels::Dict = no
     else
         t.write_string(r,c+1,otype,formats[:heading])
         t.write_string(r,c+2,"SE",formats[:heading])
-        t.write_string(r,c+3,"Z Value",formats[:heading])
-        t.write_string(r,c+4,"P-Value",formats[:heading])
+        if lm
+            t.write_string(r,c+3,"t",formats[:heading])
+        else
+            t.write_string(r,c+3,"z",formats[:heading])
+        end
+        t.write_string(r, c + 4, "P-Value", formats[:heading])
     end
 
     #------------------------------------------------------------------
@@ -148,6 +167,12 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels::Dict = no
     varname = Vector{String}(undef,nrows)
     vals = Vector{String}(undef,nrows)
     nlev = zeros(Int,nrows)
+
+    # standard errors - 2nd row in tdata are standard errors
+    if robust != nothing
+        tdata[2] = CovarianceMatrices.stderror(robust,glmout)
+    end
+
     #nord = zeros(Int,nrow)
     for i = 1:nrows
     	# variable name
@@ -175,7 +200,16 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels::Dict = no
     end
 
     # write table
-    tconfint = confint(glmout)
+    if robust == nothing   
+        tconfint = confint(glmout)
+    else # recalculate SE from tdata[2]
+        if lm # use TDist to compute critical values
+            tdata[2] = trconfint(glmout, robust)
+        else
+            tdata[2] = tzconfint(glmout, robust)
+        end
+    end
+
     lastvarname = ""
 
     for i = 1:nrows
@@ -217,10 +251,6 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels::Dict = no
     	    t.write(r,c+1,exp(tdata.cols[1][i]),formats[:or_fmt])
         else
             t.write(r,c+1,tdata.cols[1][i],formats[:or_fmt])
-        end
-
-        # standard errors
-        if robust != nothing
         end
 
         if ci == true
