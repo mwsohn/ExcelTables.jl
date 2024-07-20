@@ -357,9 +357,12 @@ function glmxls(glmout,
     col = 0,
     robust = nothing)
 
-    xlsxwriter = pyimport("xlsxwriter")
+    using PyCall
 
-    glmxls(glmout,xlsxwriter.Workbook(wbook),wsheet,labels=labels,eform=eform,ci=ci,row=row,col=col,robust=robust)
+    xlsxwriter = pyimport("xlsxwriter")
+    wb = xlsxwriter.Workbook(wbook)
+
+    glmxls(glmout,wb,wsheet;labels=labels,eform=eform,ci=ci,row=row,col=col,robust=robust,adjust=adjust)
 end
 
 
