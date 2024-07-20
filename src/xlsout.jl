@@ -347,7 +347,7 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels::Dict = no
     t.write(r,c,"BIC",formats[:model_name])
     t.merge_range(r,c+1,r,c+4,bic(glmout),formats[:p_fmt_center])
 end
-function glmxls(glmout::StatisticalModel,
+function glmxls(glmout,
     wbook::AbstractString,
     wsheet::AbstractString;
     labels::Dict = nothing,
@@ -355,7 +355,7 @@ function glmxls(glmout::StatisticalModel,
     ci = true,
     row = 0,
     col = 0,
-    robust = nothing)
+    robust = nothing, adjust=true)
 
     xlsxwriter = pyimport("xlsxwriter")
     wb = xlsxwriter.Workbook(wbook)
