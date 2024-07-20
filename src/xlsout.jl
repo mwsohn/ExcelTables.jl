@@ -104,7 +104,7 @@ julia> glmxls(ols1,"test_workbook.xlsx","OLS1")
 
 """
 function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels::Dict = nothing,
-    eform::Bool = false, ci = true, row = 0, col = 0, robust::Function = nothing)
+    eform::Bool = false, ci = true, row = 0, col = 0, robust = nothing, adjust = true)
 
     if (typeof(glmout) <: StatsModels.TableRegressionModel) == false
         error("This is not a TableRegressionModel output.")
@@ -148,7 +148,11 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels::Dict = no
         t.write_string(r,c+4,"P-Value",formats[:heading])
     else
         t.write_string(r,c+1,otype,formats[:heading])
-        t.write_string(r,c+2,"SE",formats[:heading])
+        if robust == nothing
+            t.write_string(r,c+2,"SE",formats[:heading])
+        else
+            t.write_string(r,c+2,"Robust SE",formats[:heading])
+        end
         if lm
             t.write_string(r,c+3,"t",formats[:heading])
         else
@@ -162,16 +166,16 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels::Dict = no
     c = col
 
     # go through each variable and construct variable name and value label arrays
-    tdata = coeftable(glmout)
+    if robust == nothing
+        tdata = coeftable(glmout)
+    else
+        # standard errors - 2nd row in tdata are standard errors
+        tdata = rcoeftable(glmout, robust=robust, adjust=adjust)
+    end
     nrows = length(tdata.rownms)
     varname = Vector{String}(undef,nrows)
     vals = Vector{String}(undef,nrows)
     nlev = zeros(Int,nrows)
-
-    # standard errors - 2nd row in tdata are standard errors
-    if robust != nothing
-        tdata[2] = CovarianceMatrices.stderror(robust,glmout)
-    end
 
     #nord = zeros(Int,nrow)
     for i = 1:nrows
@@ -179,8 +183,8 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels::Dict = no
         # parse varname to separate variable name from value
         if occursin(":",tdata.rownms[i])
             (varname[i],vals[i]) = split(tdata.rownms[i],": ")
-        elseif occursin(" - ",tdata.rownms[i])
-            (varname[i],vals[i]) = split(tdata.rownms[i]," - ")
+        # elseif occursin(" - ",tdata.rownms[i])
+        #     (varname[i],vals[i]) = split(tdata.rownms[i]," - ")
         else
             varname[i] = tdata.rownms[i]
             vals[i] = ""
@@ -202,12 +206,8 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels::Dict = no
     # write table
     if robust == nothing   
         tconfint = confint(glmout)
-    else # recalculate SE from tdata[2]
-        if lm # use TDist to compute critical values
-            tdata[2] = trconfint(glmout, robust)
-        else
-            tdata[2] = tzconfint(glmout, robust)
-        end
+    else
+        tconfint = rconfint(glmout,robust=robust,adjust=adjust)
     end
 
     lastvarname = ""
