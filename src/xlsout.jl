@@ -347,7 +347,7 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels::Dict = no
     t.write(r,c,"BIC",formats[:model_name])
     t.merge_range(r,c+1,r,c+4,bic(glmout),formats[:p_fmt_center])
 end
-function glmxls(glmout,
+function glmxls2(glmout,
     wbook::AbstractString,
     wsheet::AbstractString;
     labels::Dict = nothing,
