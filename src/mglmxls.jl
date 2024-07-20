@@ -191,7 +191,7 @@ function mglmxls(glmout,
         end
 
         # count the number of levels in a categorical variable
-        nlev[i] = length(vvalues[varname[i]]) # countlev(varname[i], varname)
+        nlev[i] = max(nlev[i],length(vvalues[varname[i]])) 
     end
 
     # write table
