@@ -357,8 +357,6 @@ function glmxls(glmout,
     col = 0,
     robust = nothing)
 
-    using PyCall
-
     xlsxwriter = pyimport("xlsxwriter")
     wb = xlsxwriter.Workbook(wbook)
 
