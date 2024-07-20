@@ -53,12 +53,13 @@ function mglmxls(glmout,
     ci = true,
     row = 0,
     col = 0,
+    robust::Function = nothing,
     labels::Dict = nothing)
 
     num_models = length(glmout)
     otype = Vector(undef,num_models)
     if isa(glmout[1].model,GeneralizedLinearModel)
-	linkfun = Vector{Link}(undef,num_models)
+	    linkfun = Vector{Link}(undef,num_models)
     	distrib = Vector{UnivariateDistribution}(undef,num_models)
     end
 
