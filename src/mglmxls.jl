@@ -53,7 +53,8 @@ function mglmxls(glmout,
     ci = true,
     row = 0,
     col = 0,
-    robust::Function = nothing,
+    robust = nothing,
+    adjust = true,
     labels::Dict = nothing)
 
     num_models = length(glmout)
@@ -113,7 +114,7 @@ function mglmxls(glmout,
             t.write_string(r+1,c+4,"P-Value",formats[:heading])
         else
             t.write_string(r,c+1,otype[i],formats[:heading])
-            t.write_string(r,c+2,"SE",formats[:heading])
+            t.write_string(r,c+2, robust != nothing ? "Robsut SE" : "SE",formats[:heading])
             t.write_string(r,c+3,"Z Value",formats[:heading])
             t.write_string(r,c+4,"P-Value",formats[:heading])
         end
@@ -134,9 +135,17 @@ function mglmxls(glmout,
         if isa(glmout[i].model, CoxModel)
             tdata[i] = Survival.coeftable(glmout[i])
         else
-            tdata[i] = coeftable(glmout[i])
+            if robust == nothing
+                tdata[i] = coeftable(glmout[i])
+            else
+                tdata[i] = rcoeftable(glmout[i], robust=robust, adjust=adjust)
+            end
         end
-        tconfint[i] = confint(glmout[i]) # hcat(tdata[i].cols[1], tdata[i].cols[1]) + tdata[i].cols[2] * quantile(Normal(), 0.025) * [1.0 -1.0]
+        if robust == nothing
+            tconfint[i] = confint(glmout[i]) 
+        else
+            tconfint[i] = rconfint(glmout[i], robust=robust, adjust=adjust) 
+        end
 
         # build a vector of covariate names
         for nm in tdata[i].rownms
@@ -149,7 +158,7 @@ function mglmxls(glmout,
             if in(varname, covariates) == false
                 push!(covariates,string(varname))
             end
-            if value != ""
+            if val != ""
                 if haskey(vvalues,varname)
                     vvalues[varname] = OrderedSet(vcat(collect(vvalues[varname]),val))
                 else
@@ -182,7 +191,7 @@ function mglmxls(glmout,
         end
 
         # count the number of levels in a categorical variable
-        nlev[i] = countlev(varname[i],varname)
+        nlev[i] = length(vvalues[varname[i]]) # countlev(varname[i], varname)
     end
 
     # write table
