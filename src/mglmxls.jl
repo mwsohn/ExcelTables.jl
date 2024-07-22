@@ -159,7 +159,7 @@ function mglmxls(glmout,
             end
 
             if occursin(":",nm)
-                (varname,val) = split(nm,": ")
+                (vn,val) = split(nm,": ")
             else
                 vn = nm
                 val = ""
@@ -167,7 +167,7 @@ function mglmxls(glmout,
             loc[i][(vn,val)] = k # location of the variable in the tdata.cols[1]
 
             if in(vn, covariates) == false
-                push!(covariates,nm)
+                push!(covariates,vn)
             end
 
             if haskey(vvalues,vn)
