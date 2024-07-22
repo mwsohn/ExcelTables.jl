@@ -230,7 +230,7 @@ function mglmxls(glmout,
                 c = col
                 r += 1
 
-                t.write_string(r,c,valvec[valindexi],formats[:varname_1indent])
+                t.write_string(r,c,valvec[valindex],formats[:varname_1indent])
                 if valindex == nlev[i]
                     valindex = 1
                 else
