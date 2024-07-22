@@ -325,15 +325,17 @@ function mglmxls(glmout,
             t.merge_range(r+1,c+1,r+1,c+4,adjr2(glmout[i]),formats[:p_fmt_center])
         
             # r += 2
-	    r = row2
-	    c += 4
+	        r = row2
+	        c += 4
 	
-	elseif !isa(glmout[i].model, CoxModel)
+	    elseif !isa(glmout[i].model, CoxModel)
+
+            # Logistic regression
             if isa(linkfun[i],LogitLink)
                 t.write(r,c,"Pseudo R² (MacFadden)",formats[:model_name])
                 t.merge_range(r,c+1,r,c+4,r2(glmout[i],:MacFadden),formats[:p_fmt_center])
                 t.write(r+1,c,"Pseudo R² (Nagelkerke)",formats[:model_name])
-                t.merge_range(r+1,c+1,r+1,c+4,r2(glmout[i],Nagelkerke),formats[:p_fmt_center])
+                t.merge_range(r+1,c+1,r+1,c+4,r2(glmout[i], :Nagelkerke),formats[:p_fmt_center])
 
                 # -2 log-likelihood
                 t.write(r+2,c,"-2 Log-Likelihood",formats[:model_name])
@@ -364,6 +366,7 @@ function mglmxls(glmout,
             c += 4
         else
 
+            # For coxModel
             # AIC & BIC
             t.write(r,c,"AIC",formats[:model_name])
             t.merge_range(r,c+1,r,c+4,aic(glmout[i]),formats[:p_fmt_center])
