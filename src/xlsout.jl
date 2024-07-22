@@ -12,21 +12,27 @@
 """
 function hltest(glmout,q = 10)
     d = DataFrame(yhat = predict(glmout),y = glmout.model.rr.y)
-    d[:group] = xtile(d[:yhat],nq = q)
-    df3 = by(d,:group) do subdf
-        n = size(subdf,1)
-        o1 = sum(subdf[:y])
-        e1 = sum(subdf[:yhat])
-        DataFrame(
-            observed1 = o1,
-            observed0 = n - o1,
-            expected1 = e1,
-            expected0 = n - e1
-        )
-    end
+    d.group = xtile(d[:yhat],nq = q)
+    
+    df3 = combine(groupby(d, :group), nrow => :n, :y => sum => :o1, :yhat => sum => :e1)
+    df3.observed1 = df3.o1
+    df3.observed0 = df3.n .- df3.o1
+    df3.expected1 = df3.e1
+    df3.expected0 = df3.n .- df3.e1
+    # for subdf in gdf
+    #     n = size(subdf,1)
+    #     o1 = sum(subdf[:y])
+    #     e1 = sum(subdf[:yhat])
+    #     DataFrame(
+    #         observed1 = o1,
+    #         observed0 = n - o1,
+    #         expected1 = e1,
+    #         expected0 = n - e1
+    #     )
+    # end
 
-    hlstat = sum((df3[:observed1] .- df3[:expected1]).^2 ./ df3[:expected1]
-        .+ (df3[:observed0] .- df3[:expected0]).^2 ./ df3[:expected0])
+    hlstat = sum((df3.observed1 .- df3.expected1) .^2 ./ df3.expected1
+        .+ (df3.observed0 .- df3.expected0).^2 ./ df3.expected0)
 
     dof = q - 2
 
