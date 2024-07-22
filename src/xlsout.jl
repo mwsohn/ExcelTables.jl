@@ -414,12 +414,6 @@ julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx
 function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Symbol}, wbook::PyObject, wsheet::AbstractString; 
     wt::Symbol = nothing, row::Int = 0, col::Int = 0, column_percent::Bool = true, verbose::Bool = false)
 
-    # wt = nothing
-    # row = 0
-    # col = 0
-    # column_percent = true
-    # verbose = false
-
     # colvar has to be a CategoricalArray and must have 2 or more categories
     if isa(df[!,colvar], CategoricalArray) == false || length(levels(df[!,colvar])) < 2
         error("`",colvar,"` is not a CategoricalArray or does not have two or more levels")
@@ -649,20 +643,20 @@ function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Sym
         end
     end
 end
-function bivariatexls(_df::AbstractDataFrame,
-    colvar::Symbol,
-    rowvars::Vector{Symbol},
-    wbook::AbstractString,
-    wsheet::AbstractString)
+# function bivariatexls(_df::AbstractDataFrame,
+#     colvar::Symbol,
+#     rowvars::Vector{Symbol},
+#     wbook::AbstractString,
+#     wsheet::AbstractString)
 
-    xlsxwriter = pyimport("xlsxwriter")
+#     xlsxwriter = pyimport("xlsxwriter")
 
-    wb = xlsxwriter.Workbook(wbook)
+#     wb = xlsxwriter.Workbook(wbook)
 
-    bivariatexls(_df,colvar,rowvars,wb,wsheet)
+#     bivariatexls(_df,colvar,rowvars,wb,wsheet)
 
-    wb.close()
-end
+#     wb.close()
+# end
 
 
 """
