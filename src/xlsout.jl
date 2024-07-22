@@ -12,7 +12,7 @@
 """
 function hltest(glmout,q = 10)
     d = DataFrame(yhat = predict(glmout),y = glmout.model.rr.y)
-    d.group = xtile(d[:yhat],nq = q)
+    d.group = xtile(d.yhat, nq = q)
     
     df3 = combine(groupby(d, :group), nrow => :n, :y => sum => :o1, :yhat => sum => :e1)
     df3.observed1 = df3.o1
