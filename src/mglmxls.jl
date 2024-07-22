@@ -171,7 +171,7 @@ function mglmxls(glmout,
             end
 
             if haskey(vvalues,vn)
-                vvalues[vn] = OrderedSet(vcat(collect(vvalues[varname]),val))
+                vvalues[vn] = OrderedSet(vcat(collect(vvalues[vn]),val))
             else
                 vvalues[vn] = OrderedSet([val])
             end
