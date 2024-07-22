@@ -460,7 +460,7 @@ function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Sym
     t.merge_range(r,c,r+2,c,"Variable",formats[:heading])
 
     # header 1st row = variable name
-    t.merge_range(r,c+1,r,c+(nlev+1)*2+1,label(df,colvar),formats[:heading])
+    t.merge_range(r,c+1,r,c+(nlev+1)*2+1,TableMetadataTools.label(df,colvar),formats[:heading])
 
     # header 2nd and 3rd rows
     r += 1
@@ -472,7 +472,7 @@ function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Sym
     # 
     c += 3
     for i = 1:nlev
-        t.merge_range(r,c+(i-1)*2,r,c+(i-1)*2+1,colnms[i],formats[:heading])
+        t.merge_range(r,c+(i-1)*2,r,c+(i-1)*2+1,string(colnms[i]),formats[:heading])
         t.write_string(r+1,c+(i-1)*2,"N",formats[:n_fmt_right])
         t.write_string(r+1,c+(i-1)*2+1,"(%)",formats[:pct_fmt_parens])
     end
