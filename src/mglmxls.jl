@@ -185,7 +185,7 @@ function mglmxls(glmout,
 
     for i = 1:length(covariates)
 
-        vn = copy(covariates[i])
+        vn = deepcopy(covariates[i])
 
         # use labels if exist
         if labels != nothing && haskey(labels, Symbol(vn))
