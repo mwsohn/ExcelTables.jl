@@ -131,8 +131,6 @@ function mglmxls(glmout,
     tdata = Vector(undef,num_models)
     tconfint = Vector(undef,num_models)
     loc = Dict()
-    nrows = length(covariates)
-    varname = Vector{String}(undef, nrows)
 
     for i=1:num_models
         if isa(glmout[i].model, CoxModel)
@@ -180,7 +178,8 @@ function mglmxls(glmout,
 
     # go through each variable and construct variable name and value label arrays
     # vals = Vector{String}(undef,nrows)
-    nlev = zeros(Int,nrows)
+    nrows = length(covariates)
+    nlev = zeros(Int, nrows)
     npred = [dof(m) for m in glmout]
 
     for i = 1:length(covariates)
@@ -194,7 +193,7 @@ function mglmxls(glmout,
 
         # count the number of levels in a categorical variable
         if haskey(vvalues, vn)
-            nlev[i] = length(vvalues[vn]) 
+            nlev[i] = length(vvalues[vn])
         end
     end
 
