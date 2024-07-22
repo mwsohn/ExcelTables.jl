@@ -239,7 +239,7 @@ function mglmxls(glmout,
 
             else
                 if nlev[i] == 1 && valset[1] != "Yes"
-                    t.write_string(r,c,string(covariates[i], ": ", valvec[i])),formats[:model_name])
+                    t.write_string(r,c,string(covariates[i], ": ", valvec[i]),formats[:model_name])
                 else
                     t.write_string(r,c,covariates[i],formats[:model_name])
                 end
