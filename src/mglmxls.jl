@@ -186,7 +186,7 @@ function mglmxls(glmout,
         end
 
         # use labels if exist
-        if labels != nothing
+        if labels != nothing && haskey(labels, Symbol(varname[i]))
             varname[i] = labels[Symbol(varname[i])]
         end
 
