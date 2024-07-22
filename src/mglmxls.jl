@@ -131,7 +131,9 @@ function mglmxls(glmout,
     tdata = Vector(undef,num_models)
     tconfint = Vector(undef,num_models)
     loc = Dict()
-    
+    nrows = length(covariates)
+    varname = Vector{String}(undef, nrows)
+
     for i=1:num_models
         if isa(glmout[i].model, CoxModel)
             tdata[i] = Survival.coeftable(glmout[i])
@@ -177,8 +179,6 @@ function mglmxls(glmout,
     end
 
     # go through each variable and construct variable name and value label arrays
-    nrows = length(covariates)
-    varname = Vector{String}(undef,nrows)
     vals = Vector{String}(undef,nrows)
     nlev = zeros(Int,nrows)
     npred = [dof(m) for m in glmout]
