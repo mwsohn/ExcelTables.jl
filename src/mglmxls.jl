@@ -181,6 +181,7 @@ function mglmxls(glmout,
     nrows = length(covariates)
     nlev = zeros(Int, nrows)
     npred = [dof(m) for m in glmout]
+    varname = deepcopy(covariates)
 
     for i = 1:length(covariates)
 
@@ -188,7 +189,7 @@ function mglmxls(glmout,
 
         # use labels if exist
         if labels != nothing && haskey(labels, Symbol(vn))
-            covariates[i] = labels[Symbol(vn)]
+            varname[i] = labels[Symbol(vn)]
         end
 
         # count the number of levels in a categorical variable
@@ -206,7 +207,7 @@ function mglmxls(glmout,
             # output cell boundaries only and go to the next line
 
             # variable name
-            t.write_string(r,c,covariates[i],formats[:model_name])
+            t.write_string(r,c,varname[i],formats[:model_name])
 
             valvec = collect(vvalues[covariates[i]])
 
