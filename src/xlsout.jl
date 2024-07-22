@@ -411,8 +411,14 @@ does not need to be called before the function.
 julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx","Bivariate")
 ```
 """
-function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Symbol}, wbook::PyObject, wsheet::AbstractString; 
-    wt::Symbol = nothing, row::Int = 0, col::Int = 0, column_percent::Bool = true, verbose::Bool = false)
+function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Symbol}, wbook::PyObject, wsheet::AbstractString)
+    # ; 
+    # wt::Symbol = nothing, row::Int = 0, col::Int = 0, column_percent::Bool = true, verbose::Bool = false)
+    wt = nothing
+    row = 0
+    col = 0
+    column_percent = false
+    verbose = false
 
     # colvar has to be a CategoricalArray and must have 2 or more categories
     if isa(df[!,colvar], CategoricalArray) == false || length(levels(df[!,colvar])) < 2
