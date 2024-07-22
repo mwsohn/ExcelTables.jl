@@ -130,7 +130,8 @@ function mglmxls(glmout,
     vvalues = Dict()
     tdata = Vector(undef,num_models)
     tconfint = Vector(undef,num_models)
-
+    loc = Dict()
+    
     for i=1:num_models
         if isa(glmout[i].model, CoxModel)
             tdata[i] = Survival.coeftable(glmout[i])
@@ -148,15 +149,22 @@ function mglmxls(glmout,
         end
 
         # build a vector of covariate names
-        for nm in tdata[i].rownms
+        for (k,nm) in enumerate(tdata[i].rownms)
+
+            # save the location of the variable in loc dictionary
+            if haskey(loc,i) == false
+                loc[i] = Dict()
+            end
+            loc[i][nm] = k
+
             if occursin(":",nm)
                 (varname,val) = split(nm,": ")
             else
                 varname = nm
                 val = ""
             end
-            if in(varname, covariates) == false
-                push!(covariates,string(varname))
+            if in(nm, covariates) == false
+                push!(covariates,nm)
             end
             if val != ""
                 if haskey(vvalues,varname)
@@ -176,14 +184,6 @@ function mglmxls(glmout,
     npred = [dof(m) for m in glmout]
 
     for i = 1:length(covariates)
-    	# variable name
-        # parse varname to separate variable name from value
-        if occursin(":",covariates[i])
-            (varname[i],vals[i]) = split(covariates[i],": ")
-        else
-            varname[i] = covariates[i]
-            vals[i] = ""
-        end
 
         # use labels if exist
         if labels != nothing && haskey(labels, Symbol(varname[i]))
@@ -199,7 +199,7 @@ function mglmxls(glmout,
     # write table
     lastvarname = ""
 
-    for i = 1:nrows
+    for i = 1:length(covariates)
         if varname[i] != lastvarname
             # output cell boundaries only and go to the next line
             if nlev[i] > 1
@@ -239,7 +239,7 @@ function mglmxls(glmout,
         for j=1:num_models
 
             # find the index number for each coeftable row
-            ri = findfirst(x->x == covariates[i],tdata[j].rownms)
+            ri = loc[j][covariates[i]] # findfirst(x->x == covariates[i],tdata[j].rownms)
 
             if ri == nothing
                 # this variable is not in the model
