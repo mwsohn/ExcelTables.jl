@@ -157,55 +157,61 @@ function mglmxls(glmout,
             if haskey(loc,i) == false
                 loc[i] = Dict()
             end
-            loc[i][nm] = k
 
             if occursin(":",nm)
                 (varname,val) = split(nm,": ")
             else
-                varname = nm
+                vn = nm
                 val = ""
             end
-            if in(nm, covariates) == false
+            loc[i][(vn,val)] = k # location of the variable in the tdata.cols[1]
+
+            if in(vn, covariates) == false
                 push!(covariates,nm)
             end
-            if val != ""
-                if haskey(vvalues,varname)
-                    vvalues[varname] = OrderedSet(vcat(collect(vvalues[varname]),val))
-                else
-                    vvalues[varname] = OrderedSet([val])
-                end
+
+            if haskey(vvalues,vn)
+                vvalues[vn] = OrderedSet(vcat(collect(vvalues[varname]),val))
+            else
+                vvalues[vn] = OrderedSet([val])
             end
         end
     end
 
     # go through each variable and construct variable name and value label arrays
-    vals = Vector{String}(undef,nrows)
+    # vals = Vector{String}(undef,nrows)
     nlev = zeros(Int,nrows)
     npred = [dof(m) for m in glmout]
 
     for i = 1:length(covariates)
 
+        vn = copy(covariates[i])
+
         # use labels if exist
-        if labels != nothing && haskey(labels, Symbol(varname[i]))
-            varname[i] = labels[Symbol(varname[i])]
+        if labels != nothing && haskey(labels, Symbol(vn))
+            covariates[i] = labels[Symbol(vn)]
         end
 
         # count the number of levels in a categorical variable
-        if haskey(vvalues, varname[i])
-            nlev[i] = max(nlev[i],length(vvalues[varname[i]])) 
+        if haskey(vvalues, vn)
+            nlev[i] = length(vvalues[vn]) 
         end
     end
 
     # write table
     lastvarname = ""
+    valindex = 1
 
     for i = 1:length(covariates)
-        if varname[i] != lastvarname
+        if covariates[i] != lastvarname
             # output cell boundaries only and go to the next line
-            if nlev[i] > 1
 
-                # variable name
-                t.write_string(r,c,varname[i],formats[:model_name])
+            # variable name
+            t.write_string(r,c,covariates[i],formats[:model_name])
+
+            valvec = collect(vvalues[covariates[i]])
+
+            if nlev[i] > 1
 
                 for k = 1:num_models
                     if ci == true
@@ -223,23 +229,35 @@ function mglmxls(glmout,
                 end
                 c = col
                 r += 1
-                t.write_string(r,c,vals[i],formats[:varname_1indent])
+
+                t.write_string(r,c,valvec[valindexi],formats[:varname_1indent])
+                if valindex == nlev[i]
+                    valindex = 1
+                else
+                    valindex += 1
+                end
 
             else
-                if vals[i] != "" && vals[i] != "Yes"
-                    t.write_string(r,c,string(varname[i],": ",vals[i]),formats[:model_name])
+                if nlev[i] == 1 && valset[1] != "Yes"
+                    t.write_string(r,c,string(covariates[i], ": ", valvec[i])),formats[:model_name])
                 else
-                    t.write_string(r,c,varname[i],formats[:model_name])
+                    t.write_string(r,c,covariates[i],formats[:model_name])
                 end
             end
         else
-            t.write_string(r,c,vals[i],formats[:varname_1indent])
+            t.write_string(r,c,valvec[valindex],formats[:varname_1indent])
+            if valindex == nlev[i]
+                valindex = 1
+            else
+                valindex += 1
+            end
+
         end
 
         for j=1:num_models
 
             # find the index number for each coeftable row
-            ri = loc[j][covariates[i]] # findfirst(x->x == covariates[i],tdata[j].rownms)
+            ri = loc[j][(covariates[i],valvec[valindex])] # findfirst(x->x == covariates[i],tdata[j].rownms)
 
             if ri == nothing
                 # this variable is not in the model
@@ -297,7 +315,7 @@ function mglmxls(glmout,
 
         end
 
-        lastvarname = varname[i]
+        lastvarname = covariates[i]
 
         # update row
         r += 1
