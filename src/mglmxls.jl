@@ -263,9 +263,13 @@ function mglmxls(glmout,
         for j=1:num_models
 
             # find the index number for each coeftable row
-            ri = loc[j][(covars[i],valvec[i])] # findfirst(x->x == covariates[i],tdata[j].rownms)
+            if haskey(loc[j], (covars[i],valvec[i]))
+                ri = loc[j][(covars[i],valvec[i])] # findfirst(x->x == covariates[i],tdata[j].rownms)
+            else
+                ri = 0
+            end
 
-            if ri == nothing
+            if ri == 0
                 # this variable is not in the model
                 # print empty cells and then move onto the next model
 
