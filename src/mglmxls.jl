@@ -167,29 +167,49 @@ function mglmxls(glmout,
             if in(vn, covariates) == false
                 push!(covariates,vn)
             end
-
-            if haskey(vvalues,vn)
-                vvalues[vn] = OrderedSet(vcat(collect(vvalues[vn]),val))
-            else
-                vvalues[vn] = OrderedSet([val])
+            
+            if val != ""
+                if haskey(vvalues,vn)
+                    vvalues[vn] = OrderedSet(vcat(collect(vvalues[vn]),val))
+                else
+                    vvalues[vn] = OrderedSet([val])
+                end
             end
+        end
+    end
+
+    # expand covariates and vvalues
+    covars = Vector{String}()
+    valvec = Vector{String}()
+    for vn in covaraites
+        ncat = 1
+        vval = [""]
+        if haskey(vvalues[vn])
+            ncat = length(vvalues[vn])
+            vval = collect(vvalues[vn])
+        end
+        for i = 1:ncat
+            push!(covars, vn)
+            push!(valvec, vval[i])
         end
     end
 
     # go through each variable and construct variable name and value label arrays
     # vals = Vector{String}(undef,nrows)
-    nrows = length(covariates)
+    nrows = length(covars)
     nlev = zeros(Int, nrows)
     npred = [dof(m) for m in glmout]
-    varname = deepcopy(covariates)
+    varname = deepcopy(covars)
 
-    for i = 1:length(covariates)
+    for i = 1:length(covars)
 
-        vn = deepcopy(covariates[i])
+        vn = covars[i])
 
         # use labels if exist
         if labels != nothing && haskey(labels, Symbol(vn))
             varname[i] = labels[Symbol(vn)]
+        else
+            varname[i] = vn
         end
 
         # count the number of levels in a categorical variable
@@ -200,16 +220,13 @@ function mglmxls(glmout,
 
     # write table
     lastvarname = ""
-    valindex = 1
 
-    for i = 1:length(covariates)
-        if covariates[i] != lastvarname
+    for i = 1:length(covars)
+        if covars[i] != lastvarname
             # output cell boundaries only and go to the next line
 
-            # variable name
+            # variable name - expanded if `labels` is provided
             t.write_string(r,c,varname[i],formats[:model_name])
-
-            valvec = collect(vvalues[covariates[i]])
 
             if nlev[i] > 1
 
@@ -230,34 +247,23 @@ function mglmxls(glmout,
                 c = col
                 r += 1
 
-                t.write_string(r,c,valvec[valindex],formats[:varname_1indent])
-                if valindex == nlev[i]
-                    valindex = 1
-                else
-                    valindex += 1
-                end
+                t.write_string(r,c,valvec[i],formats[:varname_1indent])
 
             else
-                if nlev[i] == 1 && valvec[1] != "Yes"
-                    t.write_string(r,c,string(covariates[i], ": ", valvec[i]),formats[:model_name])
+                if valvec[i] != "" && valvec[i] != "Yes"
+                    t.write_string(r,c,string(varname[i], ": ", valvec[i]),formats[:model_name])
                 else
-                    t.write_string(r,c,covariates[i],formats[:model_name])
+                    t.write_string(r,c,varname[i],formats[:model_name])
                 end
             end
         else
-            t.write_string(r,c,valvec[valindex],formats[:varname_1indent])
-            if valindex == nlev[i]
-                valindex = 1
-            else
-                valindex += 1
-            end
-
+            t.write_string(r,c,valvec[i],formats[:varname_1indent])
         end
 
         for j=1:num_models
 
             # find the index number for each coeftable row
-            ri = loc[j][(covariates[i],valvec[valindex])] # findfirst(x->x == covariates[i],tdata[j].rownms)
+            ri = loc[j][(covars[i],valvec[i])] # findfirst(x->x == covariates[i],tdata[j].rownms)
 
             if ri == nothing
                 # this variable is not in the model
@@ -315,7 +321,7 @@ function mglmxls(glmout,
 
         end
 
-        lastvarname = covariates[i]
+        lastvarname = covars[i]
 
         # update row
         r += 1
