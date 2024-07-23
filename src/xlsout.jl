@@ -15,8 +15,8 @@ function hltest(glmout,q = 10)
     d.group = xtile(d.yhat, nq = q)
     
     df = combine(groupby(d, :group), nrow => :n, :y => sum => :o1, :yhat => sum => :e1)
-    df.o0 = df3.n .- df3.o1
-    df.e0 = df3.n .- df3.e1
+    df.o0 = df.n .- df.o1
+    df.e0 = df.n .- df.e1
 
     hlstat = sum((df.o1 .- df.e1) .^2 ./ df.e1 .+ (df.o0 .- df.e0).^2 ./ df.e0)
 
