@@ -14,25 +14,11 @@ function hltest(glmout,q = 10)
     d = DataFrame(yhat = predict(glmout),y = glmout.model.rr.y)
     d.group = xtile(d.yhat, nq = q)
     
-    df3 = combine(groupby(d, :group), nrow => :n, :y => sum => :o1, :yhat => sum => :e1)
-    df3.observed1 = df3.o1
-    df3.observed0 = df3.n .- df3.o1
-    df3.expected1 = df3.e1
-    df3.expected0 = df3.n .- df3.e1
-    # for subdf in gdf
-    #     n = size(subdf,1)
-    #     o1 = sum(subdf[:y])
-    #     e1 = sum(subdf[:yhat])
-    #     DataFrame(
-    #         observed1 = o1,
-    #         observed0 = n - o1,
-    #         expected1 = e1,
-    #         expected0 = n - e1
-    #     )
-    # end
+    df = combine(groupby(d, :group), nrow => :n, :y => sum => :o1, :yhat => sum => :e1)
+    df.o0 = df3.n .- df3.o1
+    df.e0 = df3.n .- df3.e1
 
-    hlstat = sum((df3.observed1 .- df3.expected1) .^2 ./ df3.expected1
-        .+ (df3.observed0 .- df3.expected0).^2 ./ df3.expected0)
+    hlstat = sum((df.o1 .- df.e1) .^2 ./ df.e1 .+ (df.o0 .- df.e0).^2 ./ df.e0)
 
     dof = q - 2
 
@@ -41,27 +27,18 @@ function hltest(glmout,q = 10)
     return (hlstat, dof, pval)
 end
 
-# For these functions, use r2(GLM, :MacFadden) or r2(GLM,:Nagelkerke)
-# function nagelkerke(glmout)
-#     return StatsBase.r2(glmout,:Nagelkerke)
+# function trconfint(m; alpha = 0.05)
+#     est = coef(m)
+#     df = nobs(m) - dof(m)
+#     if typeof(m.model) <: LinearModel
+#         se = stderror(HC1(), m)
+#         cv = quantile.(TDist(71), [alpha / 2, 1 - alpha / 2])
+#     else # GLM model
+#         se = stderror(HC1(), m)
+#         cv = quantile.(Normal(), [alpha/2, 1 - alpha/2])
+#     end
+#     return hcat(est .+ se .* cv[1], est .+ se .* cv[2])
 # end
-
-# function macfadden(glmout)
-#     return StatsBase.r2(glmout,:McFadden)
-# end
-
-function trconfint(m; alpha = 0.05)
-    est = coef(m)
-    df = nobs(m) - dof(m)
-    if typeof(m.model) <: LinearModel
-        se = stderror(HC1(), m)
-        cv = quantile.(TDist(71), [alpha / 2, 1 - alpha / 2])
-    else # GLM model
-        se = stderror(HC1(), m)
-        cv = quantile.(Normal(), [alpha/2, 1 - alpha/2])
-    end
-    return hcat(est .+ se .* cv[1], est .+ se .* cv[2])
-end
 
 
 """
@@ -417,14 +394,16 @@ does not need to be called before the function.
 julia> bivariatexls(df,:incomecat,[:age,:race,:male,:bmicat],"test_workbook.xlsx","Bivariate")
 ```
 """
-function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Symbol}, wbook::PyObject, wsheet::AbstractString)
-    # ; 
-    # wt::Symbol = nothing, row::Int = 0, col::Int = 0, column_percent::Bool = true, verbose::Bool = false)
-    wt = nothing
-    row = 0
-    col = 0
-    column_percent = false
-    verbose = false
+function bivariatexls(df::AbstractDataFrame, 
+    colvar::Symbol, 
+    rowvars::Vector{Symbol}, 
+    wbook::PyObject, 
+    wsheet::AbstractString; 
+    wt::Symbol = nothing, 
+    row::Int = 0, 
+    col::Int = 0, 
+    column_percent::Bool = true, 
+    verbose::Bool = false)
 
     # colvar has to be a CategoricalArray and must have 2 or more categories
     if isa(df[!,colvar], CategoricalArray) == false || length(levels(df[!,colvar])) < 2
@@ -451,6 +430,9 @@ function bivariatexls(df::AbstractDataFrame, colvar::Symbol, rowvars::Vector{Sym
     else
         collev = freqtable(df2,colvar,skipmissing=true,weights=df2[wt])
     end
+
+    # drop empty rows
+    # z = findall(x -> x != 0, collev.array)
     nlev = length(collev.array)
     tmpnms = names(collev,1)
     colnms = Vector{CategoricalArrays.leveltype(tmpnms)}(tmpnms)
