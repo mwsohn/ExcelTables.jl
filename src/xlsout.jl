@@ -405,6 +405,8 @@ function bivariatexls(df::AbstractDataFrame,
     column_percent::Bool = true, 
     verbose::Bool = false)
 
+    column_percent = false
+
     # colvar has to be a CategoricalArray and must have 2 or more categories
     if isa(df[!,colvar], CategoricalArray) == false || length(levels(df[!,colvar])) < 2
         error("`",colvar,"` is not a CategoricalArray or does not have two or more levels")
