@@ -181,7 +181,7 @@ function mglmxls(glmout,
     # expand covariates and vvalues
     covars = Vector{String}()
     valvec = Vector{String}()
-    for vn in covaraites
+    for vn in covariates
         ncat = 1
         vval = [""]
         if haskey(vvalues[vn])
