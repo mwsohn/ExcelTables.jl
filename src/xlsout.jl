@@ -399,6 +399,7 @@ function bivariatexls(df::AbstractDataFrame,
     rowvars::Vector{Symbol}, 
     wbook::PyObject, 
     wsheet::AbstractString)
+
     # wts::Symbol = nothing, 
     # rows::Int = 0, 
     # cols::Int = 0, 
@@ -407,11 +408,11 @@ function bivariatexls(df::AbstractDataFrame,
     # ,
     # verbose::Bool = false)
 
-    # wt = nothing
-    # row = 0
-    # col = 0
-    # verbose = false
-    # column_percent = false
+    wts = nothing
+    rows = 0
+    cols = 0
+    verbose = false
+    column_percent = false
 
     # colvar has to be a CategoricalArray and must have 2 or more categories
     if isa(df[!,colvar], CategoricalArray) == false || length(levels(df[!,colvar])) < 2
