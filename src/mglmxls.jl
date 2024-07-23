@@ -203,7 +203,7 @@ function mglmxls(glmout,
 
     for i = 1:length(covars)
 
-        vn = covars[i])
+        vn = covars[i]
 
         # use labels if exist
         if labels != nothing && haskey(labels, Symbol(vn))
