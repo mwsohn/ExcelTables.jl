@@ -398,13 +398,18 @@ function bivariatexls(df::AbstractDataFrame,
     colvar::Symbol, 
     rowvars::Vector{Symbol}, 
     wbook::PyObject, 
-    wsheet::AbstractString; 
-    wt::Symbol = nothing, 
-    row::Int = 0, 
-    col::Int = 0, 
-    column_percent::Bool = true, 
-    verbose::Bool = false)
+    wsheet::AbstractString)
 
+    # wt::Symbol = nothing, 
+    # row::Int = 0, 
+    # col::Int = 0, 
+    # column_percent::Bool = true, 
+    # verbose::Bool = false)
+
+    wt = nothing
+    row = 0
+    col = 0
+    verbose = false
     column_percent = false
 
     # colvar has to be a CategoricalArray and must have 2 or more categories
