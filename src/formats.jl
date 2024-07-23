@@ -186,7 +186,7 @@ format_defs[:or_fmt] = Dict(
 )
 
 format_defs[:cilb_fmt] = Dict(
-	"num_format" => "(0.000,;(-0.000,",
+	"num_format" => "(0.000\,;(-0.000\,",
 	"font" => "Arial",
 	"size" => 9,
 	"valign" => "vcenter",
