@@ -398,19 +398,18 @@ function bivariatexls(df::AbstractDataFrame,
     colvar::Symbol, 
     rowvars::Vector{Symbol}, 
     wbook::PyObject, 
-    wsheet::AbstractString)
+    wsheet::AbstractString ;
+    wt::Symbol = nothing, 
+    rows::Int = 0, 
+    cols::Int = 0, 
+    column_percent::Bool = true, 
+    verbose::Bool = false)
 
-    # wt::Symbol = nothing, 
-    # row::Int = 0, 
-    # col::Int = 0, 
-    # column_percent::Bool = true, 
-    # verbose::Bool = false)
-
-    wt = nothing
-    row = 0
-    col = 0
-    verbose = false
-    column_percent = false
+    # wt = nothing
+    # row = 0
+    # col = 0
+    # verbose = false
+    # column_percent = false
 
     # colvar has to be a CategoricalArray and must have 2 or more categories
     if isa(df[!,colvar], CategoricalArray) == false || length(levels(df[!,colvar])) < 2
@@ -424,8 +423,8 @@ function bivariatexls(df::AbstractDataFrame,
     formats = ExcelTables.attach_formats(wbook)
 
     # starting row and column
-    r = row
-    c = col
+    r = rows
+    c = cols
 
     # drop NAs in colvar
     df2 = df[completecases(df[!,[colvar]]),:];
@@ -531,17 +530,17 @@ function bivariatexls(df::AbstractDataFrame,
             # two levels with [0,1] or [false,true]
             if length(rowval) <= 2 && rowval in ([1],[true],["Yes"],[0,1],[false,true],["No","Yes"])
 
-                nrow = length(rowval) 
+                nr = length(rowval) 
                 # row total
-                t.write(r,c+1,rowtot[nrow],formats[:n_fmt_right])
-                t.write(r,c+2,rowtot[nrow]/tot,formats[:pct_fmt_parens])
+                t.write(r,c+1,rowtot[nr],formats[:n_fmt_right])
+                t.write(r,c+2,rowtot[nr]/tot,formats[:pct_fmt_parens])
 
                 for j = 1:nlev
-                    t.write(r,c+j*2+1,x.array[nrow,j],formats[:n_fmt_right])
+                    t.write(r,c+j*2+1,x.array[nr,j],formats[:n_fmt_right])
                     if column_percent
-                        t.write(r,c+j*2+2, coltot[j] > 0 ? x.array[nrow,j]/coltot[j] : "",formats[:pct_fmt_parens])
+                        t.write(r,c+j*2+2, coltot[j] > 0 ? x.array[nr,j]/coltot[j] : "",formats[:pct_fmt_parens])
                     else # elseif rowtot[2] > 0
-                        t.write(r,c+j*2+2, rowtot[nrow] > 0 ? x.array[nrow,j]/rowtot[nrow] : "",formats[:pct_fmt_parens])
+                        t.write(r,c+j*2+2, rowtot[nr] > 0 ? x.array[nr,j]/rowtot[nr] : "",formats[:pct_fmt_parens])
                     end
                 end
                 pval = pvalue(ChisqTest(x.array))
