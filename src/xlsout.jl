@@ -409,8 +409,8 @@ function bivariatexls(df::AbstractDataFrame,
     # verbose::Bool = false)
 
     wts = nothing
-    rows = 0
-    cols = 0
+    row = 0
+    col = 0
     verbose = false
     column_percent = false
 
@@ -426,8 +426,8 @@ function bivariatexls(df::AbstractDataFrame,
     formats = ExcelTables.attach_formats(wbook)
 
     # starting row and column
-    r = rows
-    c = cols
+    r = row
+    c = col
 
     # drop NAs in colvar
     df2 = df[completecases(df[!,[colvar]]),:];
