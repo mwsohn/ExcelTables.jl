@@ -184,7 +184,7 @@ function mglmxls(glmout,
     for vn in covariates
         ncat = 1
         vval = [""]
-        if haskey(vvalues[vn])
+        if haskey(vvalues, vn)
             ncat = length(vvalues[vn])
             vval = collect(vvalues[vn])
         end
