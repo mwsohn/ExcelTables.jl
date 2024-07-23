@@ -398,11 +398,11 @@ function bivariatexls(df::AbstractDataFrame,
     colvar::Symbol, 
     rowvars::Vector{Symbol}, 
     wbook::PyObject, 
-    wsheet::AbstractString ;
-    wts::Symbol = nothing, 
-    rows::Int = 0, 
-    cols::Int = 0, 
-    column_percent::Bool = true) 
+    wsheet::AbstractString)
+    # wts::Symbol = nothing, 
+    # rows::Int = 0, 
+    # cols::Int = 0, 
+    # column_percent::Bool = true) 
 
     # ,
     # verbose::Bool = false)
