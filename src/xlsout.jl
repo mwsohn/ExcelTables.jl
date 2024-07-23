@@ -399,11 +399,13 @@ function bivariatexls(df::AbstractDataFrame,
     rowvars::Vector{Symbol}, 
     wbook::PyObject, 
     wsheet::AbstractString ;
-    wt::Symbol = nothing, 
+    wts::Symbol = nothing, 
     rows::Int = 0, 
     cols::Int = 0, 
-    column_percent::Bool = true, 
-    verbose::Bool = false)
+    column_percent::Bool = true) 
+
+    # ,
+    # verbose::Bool = false)
 
     # wt = nothing
     # row = 0
@@ -431,10 +433,10 @@ function bivariatexls(df::AbstractDataFrame,
 
     # number of columns
     # column values
-    if wt == nothing
+    if wts == nothing
         collev = freqtable(df2,colvar,skipmissing=true)
     else
-        collev = freqtable(df2,colvar,skipmissing=true,weights=df2[wt])
+        collev = freqtable(df2,colvar,skipmissing=true,weights=df2[!,wts])
     end
 
     # drop empty rows
@@ -478,10 +480,10 @@ function bivariatexls(df::AbstractDataFrame,
     c = col
     r += 2
     t.write_string(r,c,"All, n (Row %)",formats[:model_name])
-    if wt == nothing
+    if wts == nothing
         x = freqtable(df2,colvar,skipmissing=true)
     else
-        x = freqtable(df2,colvar,skipmissing=true,weights=df2[wt])
+        x = freqtable(df2,colvar,skipmissing=true,weights=df2[!,wts])
     end
     tot = sum(x)
     t.write(r,c+1,tot,formats[:n_fmt_right])
@@ -497,9 +499,9 @@ function bivariatexls(df::AbstractDataFrame,
     r += 1
     for varname in rowvars
 
-        if verbose == true
-            println("Processing ",varname)
-        end
+        # if verbose == true
+        #     println("Processing ",varname)
+        # end
 
         # variable name
         vars = label(df,varname)
@@ -509,10 +511,10 @@ function bivariatexls(df::AbstractDataFrame,
 
             # categorial
             df3=df2[completecases(df2[:,[varname]]),[varname,colvar]]
-            if wt == nothing
+            if wts == nothing
                 x = freqtable(df3,varname,colvar,skipmissing=true)
             else
-                x = freqtable(df3,varname,colvar,skipmissing=true,weights=df3[wt])
+                x = freqtable(df3,varname,colvar,skipmissing=true,weights=df3[!,wts])
             end
             rtmpnms = names(x,1)
             rowval = Vector{CategoricalArrays.leveltype(rtmpnms)}(rtmpnms)
