@@ -55,7 +55,7 @@ function mglmxls(glmout,
     col = 0,
     robust = nothing,
     adjust = true,
-    labels::Dict = nothing)
+    labels = nothing)
 
     num_models = length(glmout)
     otype = Vector(undef,num_models)
