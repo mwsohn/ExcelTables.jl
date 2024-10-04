@@ -284,26 +284,54 @@ function mglmxls(glmout,
 
 
     	    # estimates
+            ret = ri <= npred[j] ? tdata[j].cols[1][ri] : NaN
             if eform == true
-        	    t.write(r,c+1,ri <= npred[j] ? exp(tdata[j].cols[1][ri]) : "",formats[:or_fmt])
+                if ret == NaN
+                    ret = ""
+                else
+                    ret = exp(ret)
+                end
+        	    t.write(r,c+1,ret,formats[:or_fmt])
             else
-                t.write(r,c+1,ri <= npred[j] ? tdata[j].cols[1][ri] : "",formats[:or_fmt])
+                if ret == NaN
+                    ret = ""
+                end
+                t.write(r,c+1,ret,formats[:or_fmt])
             end
 
             if ci == true
 
+                retlo = ri <= npred[j] ? exp(tconfint[j][ri,1]) : NaN
+                rethi = ri <= npred[j] ? exp(tconfint[j][ri,2]) : NaN
                 if eform == true
+
                 	# 95% CI Lower
-                	t.write(r,c+2,ri <= npred[j] ? exp(tconfint[j][ri,1]) : "",formats[:cilb_fmt])
+                    if retlo == NaN
+                        retlo = ""
+                    else
+                        retlo = exp(retlo)
+                    end
+                    t.write(r, c + 2, retlo, formats[:cilb_fmt])
 
                 	# 95% CI Upper
-                	t.write(r,c+3,ri <= npred[j] ? exp(tconfint[j][ri,2]) : "",formats[:ciub_fmt])
+                    if rethi == NaN
+                        rethi = ""
+                    else
+                        rethi = exp(retlo)
+                    end
+                    t.write(r, c + 3, rethi, formats[:ciub_fmt])
                 else
                     # 95% CI Lower
-                	t.write(r,c+2,ri <= npred[j] ? tconfint[j][ri,1] : "",formats[:cilb_fmt])
+                    if retlo == NaN
+                        retlo = ""
+                    end
+                    t.write(r, c + 2, retlo, formats[:cilb_fmt])
 
                 	# 95% CI Upper
-                	t.write(r,c+3,ri <= npred[j] ? tconfint[j][ri,2] : "",formats[:ciub_fmt])
+                    if rethi == NaN
+                        rethi = ""
+                    end
+                    t.write(r, c + 3, rethi, formats[:ciub_fmt])
                 end
             else
                 # SE
