@@ -287,7 +287,7 @@ function mglmxls(glmout,
 
 
     	    # estimates
-            ret = ri <= npred[j] ? tdata[j].cols[1][ri] : ""
+            ret = ri <= npred[j] ? tdata[j].cols[1][ri] : NaN
             if eform == true
                 t.write(r,c+1,exp(ret),formats[:or_fmt])
             else
@@ -296,8 +296,8 @@ function mglmxls(glmout,
 
             if ci == true
 
-                retlo = ri <= npred[j] ? exp(tconfint[j][ri,1]) : ""
-                rethi = ri <= npred[j] ? exp(tconfint[j][ri,2]) : ""
+                retlo = ri <= npred[j] ? tconfint[j][ri,1] : NaN
+                rethi = ri <= npred[j] ? tconfint[j][ri,2] : NaN
                 if eform == true
 
                 	# 95% CI Lower
