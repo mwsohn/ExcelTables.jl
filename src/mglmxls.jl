@@ -57,6 +57,9 @@ function mglmxls(glmout,
     adjust = true,
     labels = nothing)
 
+    # take care of issues with nan/inf
+    wbook.nan_inf_to_errors = true
+
     num_models = length(glmout)
     otype = Vector(undef,num_models)
     if isa(glmout[1].model,GeneralizedLinearModel)
@@ -284,53 +287,29 @@ function mglmxls(glmout,
 
 
     	    # estimates
-            ret = ri <= npred[j] ? tdata[j].cols[1][ri] : NaN
+            ret = ri <= npred[j] ? tdata[j].cols[1][ri] : ""
             if eform == true
-                if ret == NaN
-                    ret = ""
-                else
-                    ret = exp(ret)
-                end
-        	    t.write(r,c+1,ret,formats[:or_fmt])
+                t.write(r,c+1,exp(ret),formats[:or_fmt])
             else
-                if ret == NaN
-                    ret = ""
-                end
                 t.write(r,c+1,ret,formats[:or_fmt])
             end
 
             if ci == true
 
-                retlo = ri <= npred[j] ? exp(tconfint[j][ri,1]) : NaN
-                rethi = ri <= npred[j] ? exp(tconfint[j][ri,2]) : NaN
+                retlo = ri <= npred[j] ? exp(tconfint[j][ri,1]) : ""
+                rethi = ri <= npred[j] ? exp(tconfint[j][ri,2]) : ""
                 if eform == true
 
                 	# 95% CI Lower
-                    if retlo == NaN
-                        retlo = ""
-                    else
-                        retlo = exp(retlo)
-                    end
-                    t.write(r, c + 2, retlo, formats[:cilb_fmt])
+                    t.write(r, c + 2, exp(retlo), formats[:cilb_fmt])
 
                 	# 95% CI Upper
-                    if rethi == NaN
-                        rethi = ""
-                    else
-                        rethi = exp(retlo)
-                    end
-                    t.write(r, c + 3, rethi, formats[:ciub_fmt])
+                    t.write(r, c + 3, exp(rethi), formats[:ciub_fmt])
                 else
                     # 95% CI Lower
-                    if retlo == NaN
-                        retlo = ""
-                    end
                     t.write(r, c + 2, retlo, formats[:cilb_fmt])
 
                 	# 95% CI Upper
-                    if rethi == NaN
-                        rethi = ""
-                    end
                     t.write(r, c + 3, rethi, formats[:ciub_fmt])
                 end
             else
