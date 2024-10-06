@@ -216,8 +216,6 @@ function mglmxls(glmout,
         # use labels if exist
         if labels != nothing && haskey(labels, Symbol(vn))
             varname[i] = labels[Symbol(vn)]
-        elseif nlev[i] == 2 && occursin(": 1",vn)
-            varname[i] = chop(vn, tail=3)
         else
             varname[i] = vn
         end
@@ -256,7 +254,7 @@ function mglmxls(glmout,
                 t.write_string(r,c,valvec[i],formats[:varname_1indent])
 
             else
-                if valvec[i] != "" && valvec[i] != "Yes"
+                if valvec[i] != "" && in(valvec[i], ["Yes","1"]) == false
                     t.write_string(r,c,string(varname[i], ": ", valvec[i]),formats[:model_name])
                 else
                     t.write_string(r,c,varname[i],formats[:model_name])
