@@ -208,17 +208,20 @@ function mglmxls(glmout,
 
         vn = covars[i]
 
-        # use labels if exist
-        if labels != nothing && haskey(labels, Symbol(vn))
-            varname[i] = labels[Symbol(vn)]
-        else
-            varname[i] = vn
-        end
-
         # count the number of levels in a categorical variable
         if haskey(vvalues, vn)
             nlev[i] = length(vvalues[vn])
         end
+
+        # use labels if exist
+        if labels != nothing && haskey(labels, Symbol(vn))
+            varname[i] = labels[Symbol(vn)]
+        elseif nlev[i] == 2 && occursin(": 1",vn)
+            varname[i] = chop(vn, tail=3)
+        else
+            varname[i] = vn
+        end
+
     end
 
     # write table
