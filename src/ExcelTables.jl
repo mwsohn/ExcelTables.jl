@@ -20,7 +20,8 @@ export  univariatexls, # output univariate statistics in an excel worksheet
         glmxls,        # output GLM models to an excel worksheet
         mglmxls,       # output multiple GLM regression models to an excel spreadsheet
         dfxls,         # output dataframe in an excel file
-        hltest
+        hltest,
+        rocdata        # for use with ROC.jl
 
 ##############################################################################
 ##
