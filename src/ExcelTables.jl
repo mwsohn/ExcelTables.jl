@@ -31,5 +31,6 @@ export  univariatexls, # output univariate statistics in an excel worksheet
 include("xlsout.jl")
 include("mglmxls.jl")
 include("formats.jl")
+include("rocdata.jl")
 
 end # module
