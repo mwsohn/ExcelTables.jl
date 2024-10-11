@@ -385,11 +385,11 @@ function mglmxls(glmout,
                 t.merge_range(r+3,c+1,r+3,c+4,string(round(hl[1],digits=4)," (",hl[2],"); p = ",round(hl[3],digits=4)),formats[:p_fmt_center])
 
                 # ROC (c-statistic)
-                # t.write(r+4,c,"Area under the ROC Curve",formats[:model_name])
-                # _roc = ROC.AUC(ROC.roc(predict(glmout[i]), glmout[i].model.rr.y, true))
-                # t.merge_range(r+4,c+1,r+4,c+4,round(_roc,digits=4),formats[:p_fmt_center])
+                t.write(r+4,c,"Area under the ROC Curve",formats[:model_name])
+                _roc = ROC.AUC(rocdata(predict(glmout[i]), glmout[i].model.rr.y))
+                t.merge_range(r+4,c+1,r+4,c+4,round(_roc,digits=4),formats[:p_fmt_center])
 
-                r += 4 # 5
+                r += 5
             end
 
             # AIC & BIC
