@@ -386,7 +386,7 @@ function mglmxls(glmout,
 
                 # ROC (c-statistic)
                 t.write(r+4,c,"Area under the ROC Curve",formats[:model_name])
-                _roc = ROC.AUC(rocdata(predict(glmout[i]), glmout[i].model.rr.y))
+                _roc = ROC.AUC(ExcelTables.rocdata(predict(glmout[i]), glmout[i].model.rr.y))
                 t.merge_range(r+4,c+1,r+4,c+4,round(_roc,digits=4),formats[:p_fmt_center])
 
                 r += 5
