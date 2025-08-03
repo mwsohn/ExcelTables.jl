@@ -631,7 +631,7 @@ function bivariatexls(df::AbstractDataFrame,
                 end
             end
             if size(y,1) > 1
-                pval = Stella.anova(df3,varname,colvar; pval=true)[4]
+                pval = AnalysisOfVariance.anova(df3,varname,colvar).pvalues[3]
                 if isnan(pval) || isinf(pval)
                     pval = ""
                 elseif pval < 0.001
