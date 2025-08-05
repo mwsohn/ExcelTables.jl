@@ -1,5 +1,5 @@
 """
-    mglmxls(glmout::Vector{DataFrames.DataFrameRegressionModel}, workbook::PyObject, worksheet::AbstractString; mtitle::Union{Vector,Nothing}=nothing,eform=false,ci=true, row = 0, col =0)
+    mglmxls(glmout::Vector{DataFrames.DataFrameRegressionModel}, workbook::PyObject, worksheet::AbstractString; labels::Union{Nothing,Dict}=nothing,mtitle::Union{Vector,Nothing}=nothing,eform=false,ci=true, row = 0, col =0)
 
 Outputs multiple GLM regression tables side by side to an excel spreadsheet.
 To use this function, `PyCall` is required with a working version python and
@@ -9,6 +9,7 @@ or a value of a variable in a `labels`, the label will be output. Options are:
 - `glmout`: a vector of GLM regression models
 - `workbook`: a returned value from xlsxwriter.Workbook() function (see an example below)
 - `worksheet`: a string for the worksheet name
+- `labels`: an option to specify a `label` dictionary (see an example below)
 - `mtitle`: header label for GLM models. If not specified, the dependent variable name will be used.
 - `eform`: use `eform = true` to get exponentiated estimates, standard errors, or 95% confidence intervals
 - `ci`: use `ci = true` (default) to get 95% confidence intervals. `ci = false` will produce standard errors and Z values instead.
@@ -28,7 +29,7 @@ julia> xlsxwriter = pyimport("xlsxwriter")
 julia> wb = xlsxwriter.Workbook("test_workbook.xlsx")
 PyObject <xlsxwriter.workbook.Workbook object at 0x000000002A628E80>
 
-julia> mglmxls(olsmodels,wb,"OLS1")
+julia> mglmxls(olsmodels,wb,"OLS1",labels = label)
 
 julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate")
 
@@ -40,7 +41,7 @@ Alternatively, one can create a spreadsheet file directly. `PyCall` or `pyimport
 does not need to be called before the function.
 
 ```
-julia> mglmxls(olsmodels,"test_workbook.xlsx","OLS1")
+julia> mglmxls(olsmodels,"test_workbook.xlsx","OLS1",labels = label)
 ```
 
 """
@@ -53,7 +54,8 @@ function mglmxls(glmout,
     row = 0,
     col = 0,
     robust = nothing,
-    adjust = true)
+    adjust = true,
+    labels = nothing)
 
     # take care of issues with nan/inf
     wbook.nan_inf_to_errors = true
@@ -420,6 +422,7 @@ function mglmxls(glmout,
     wbook::AbstractString,
     wsheet::AbstractString;
     mtitle::Union{String,Nothing} = nothing,
+    labels::Dict = nothing,
     eform::Bool = false,
     ci = true,
     row = 0,
