@@ -564,8 +564,7 @@ function bivariatexls(df::AbstractDataFrame,
                 r += 1
                 for i = 1:length(rowval)
                     # row value
-                    println("rowval[i] = ", rowval[i])
-                    t.write_string(r,c,rowval[i],formats[:varname_1indent])
+                    t.write_string(r,c,string(rowval[i]),formats[:varname_1indent])
 
                     # row total
                     t.write(r,c+1,rowtot[i],formats[:n_fmt_right])
