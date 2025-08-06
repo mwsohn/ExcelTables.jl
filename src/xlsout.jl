@@ -505,7 +505,7 @@ function bivariatexls(df::AbstractDataFrame,
         # end
 
         # variable name
-        vars = label(df,varname)
+        vars = label(df,varname) # a function in TableMetadataTools
 
         # determine if varname is categorical or continuous
         if isa(df2[!,varname], CategoricalArray) || eltype(df2[!,varname]) == String
@@ -675,7 +675,6 @@ in a `Label` object, the label will be output. Options are:
 - `contvars`: a vector of continuous variables
 - `workbook`: a returned value from xlsxwriter.Workbook() function (see an example below)
 - `worksheet`: a string for the worksheet name
-- `labels`: an option to specify a `label` dictionary (see an example below)
 - `row`: specify the row of the workbook to start the output table (default = 0 (for row 1))
 - `col`: specify the column of the workbook to start the output table (default = 0 (for column A))
 
@@ -694,9 +693,9 @@ PyObject <xlsxwriter.workbook.Workbook object at 0x000000002A628E80>
 
 julia> glmxls(ols1,wb,"OLS1",labels = label)
 
-julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate",labels = label)
+julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate")
 
-julia> univariatexls(df,[:age,:income_amt,:bmi],wb,"Univariate",labels = label)
+julia> univariatexls(df,[:age,:income_amt,:bmi],wb,"Univariate")
 
 Julia> wb.close()
 ```
@@ -706,7 +705,7 @@ Alternatively, one can create a spreadsheet file directly. `PyCall` or `@pyimpor
 does not need to be called before the function.
 
 ```jldoctest
-julia> univariatexls(df,[:age,:income_amt,:bmi],"test_workbook.xlsx","Bivariate",labels = label)
+julia> univariatexls(df,[:age,:income_amt,:bmi],"test_workbook.xlsx","Bivariate")
 ```
 
 """
