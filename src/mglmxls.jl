@@ -1,5 +1,5 @@
 """
-    mglmxls(glmout::Vector{DataFrames.DataFrameRegressionModel}, workbook::PyObject, worksheet::AbstractString; labels::Union{Nothing,Dict}=nothing,mtitle::Union{Vector,Nothing}=nothing,eform=false,ci=true, row = 0, col =0)
+    mglmxls(glmout::Vector{DataFrames.DataFrameRegressionModel}, workbook::PyObject, worksheet::AbstractString; mtitle::Union{Vector,Nothing}=nothing,eform=false,ci=true, row = 0, col =0)
 
 Outputs multiple GLM regression tables side by side to an excel spreadsheet.
 To use this function, `PyCall` is required with a working version python and
@@ -9,8 +9,8 @@ or a value of a variable in a `labels`, the label will be output. Options are:
 - `glmout`: a vector of GLM regression models
 - `workbook`: a returned value from xlsxwriter.Workbook() function (see an example below)
 - `worksheet`: a string for the worksheet name
-- `labels`: an option to specify a `label` dictionary (see an example below)
 - `mtitle`: header label for GLM models. If not specified, the dependent variable name will be used.
+- `labels`: variable labels can be specified here as a dictionary.
 - `eform`: use `eform = true` to get exponentiated estimates, standard errors, or 95% confidence intervals
 - `ci`: use `ci = true` (default) to get 95% confidence intervals. `ci = false` will produce standard errors and Z values instead.
 - `row`: specify the row of the workbook to start the output table (default = 0 (for row 1))
@@ -29,7 +29,7 @@ julia> xlsxwriter = pyimport("xlsxwriter")
 julia> wb = xlsxwriter.Workbook("test_workbook.xlsx")
 PyObject <xlsxwriter.workbook.Workbook object at 0x000000002A628E80>
 
-julia> mglmxls(olsmodels,wb,"OLS1",labels = label)
+julia> mglmxls(olsmodels,wb,"OLS1")
 
 julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate")
 
@@ -41,7 +41,7 @@ Alternatively, one can create a spreadsheet file directly. `PyCall` or `pyimport
 does not need to be called before the function.
 
 ```
-julia> mglmxls(olsmodels,"test_workbook.xlsx","OLS1",labels = label)
+julia> mglmxls(olsmodels,"test_workbook.xlsx","OLS1")
 ```
 
 """
@@ -54,8 +54,8 @@ function mglmxls(glmout,
     row = 0,
     col = 0,
     robust = nothing,
-    adjust = true,
-    labels = nothing)
+    labels = nothing,
+    adjust = true)
 
     # take care of issues with nan/inf
     wbook.nan_inf_to_errors = true
@@ -91,7 +91,7 @@ function mglmxls(glmout,
         # assign dependent variables
         for i=1:num_models
             ysim = glmout[i].mf.f.lhs.sym #terms.eterms[1]
-            mtitle[i] = labels != nothing && haskey(labels, ysim) ? labels[ysim] : string(ysim)
+            mtitle[i] = string(ysim)
         end
     end
 
@@ -209,11 +209,7 @@ function mglmxls(glmout,
         vn = covars[i]
 
         # count the number of levels in a categorical variable
-        if haskey(vvalues, vn)
-            nlev[i] = length(vvalues[vn])
-        end
-
-        # use labels if exist
+        # use TableMetadataTools to get variable labels
         if labels != nothing && haskey(labels, Symbol(vn))
             varname[i] = labels[Symbol(vn)]
         else
