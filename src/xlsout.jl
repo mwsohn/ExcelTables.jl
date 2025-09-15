@@ -379,8 +379,6 @@ julia> xlsxwriter = pyimport("xlsxwriter")
 julia> wb = xlsxwriter.Workbook("test_workbook.xlsx")
 PyObject <xlsxwriter.workbook.Workbook object at 0x000000002A628E80>
 
-julia> glmxls(ols1,wb,"OLS1",labels = label)
-
 julia> bivairatexls(df,:incomecat,[:age,:race,:male,:bmicat],wb,"Bivariate")
 
 Julia> wb.close()
