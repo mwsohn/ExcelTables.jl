@@ -182,8 +182,8 @@ function glmxls(glmout,wbook::PyObject,wsheet::AbstractString; labels::Dict = no
             end
         end
     end
-    for i = 1:nrows
-        nlev[i] = countlev(varname[i],varname)
+    for i in 1:length(varname)
+        nlev[i] = length(findall(x -> x == varname[i], varname))
     end
 
     # write table
@@ -961,14 +961,4 @@ function newfilename(filen::AbstractString)
         end
     end
     return filen
-end
-
-function countlev(str::AbstractString,sarray::Vector{String})
-    k = 0
-    for i = 1:length(sarray)
-        if str == sarray[i]
-            k += 1
-        end
-    end
-    return k
 end
