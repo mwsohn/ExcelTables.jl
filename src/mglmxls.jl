@@ -216,10 +216,11 @@ function mglmxls(glmout,
             varname[i] = vn
         end
 
-        nlev[i] = ExcelTables.countlev(varname[i],varname)
-
     end
-
+    for i in 1:length(varname)
+        nlev[i] = length(findall(x -> x == varname[i], varname)) # ExcelTables.countlev(varname[i],varname)
+    end
+    
     # write table
     lastvarname = ""
 
