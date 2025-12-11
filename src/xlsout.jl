@@ -630,7 +630,7 @@ function bivariatexls(df::AbstractDataFrame,
             end
             if size(y,1) > 1
                 pval = AnalysisOfVariance.anova(df3,varname,colvar).pvalue[3]
-                if isnan(pval) || isinf(pval)
+                if ismissing(pval) || isnan(pval) || isinf(pval)
                     pval = ""
                 elseif pval < 0.001
                     pval = "< 0.001"
