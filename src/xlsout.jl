@@ -595,7 +595,8 @@ function bivariatexls(df::AbstractDataFrame,
         else
             # continuous variable
             df3=df2[completecases(df2[!,[varname]]),[varname,colvar]]
-            y = tabstat(df3, varname, colvar) #, wt=df3[wt])
+            #y = tabstat(df3, varname, colvar) #, wt=df3[wt])
+            y = combine(groupby(df3,colvar,sort=true), varname .=> [mean, sd] .=> [:mean, :sd])
 
             # variable name
             t.write_string(r,c,string(vars,", mean (SD)"),formats[:model_name])
@@ -621,8 +622,8 @@ function bivariatexls(df::AbstractDataFrame,
             # colvar levels
             for i = 1:nlev
                 if i <= size(y,1) && y[i,:n] > 1
-                    t.write(r,c+i*2+1,y.omat[i,2],formats[:f_fmt_right])
-                    t.write(r,c+i*2+2,y.omat[i,3],formats[:f_fmt_left_parens])
+                    t.write(r,c+i*2+1,y.mean,formats[:f_fmt_right])
+                    t.write(r,c+i*2+2,y.sd,formats[:f_fmt_left_parens])
                 else
                     t.write(r,c+i*2+1,"",formats[:f_fmt_right])
                     t.write(r,c+i*2+2,"",formats[:f_fmt_left_parens])
