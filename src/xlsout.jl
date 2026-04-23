@@ -622,8 +622,8 @@ function bivariatexls(df::AbstractDataFrame,
             # colvar levels
             for i = 1:nlev
                 if i <= size(y,1) && y[i,:n] > 1
-                    t.write(r,c+i*2+1,y.mean,formats[:f_fmt_right])
-                    t.write(r,c+i*2+2,y.sd,formats[:f_fmt_left_parens])
+                    t.write(r,c+i*2+1,y[i,:mean],formats[:f_fmt_right])
+                    t.write(r,c+i*2+2,y[i,:sd],formats[:f_fmt_left_parens])
                 else
                     t.write(r,c+i*2+1,"",formats[:f_fmt_right])
                     t.write(r,c+i*2+2,"",formats[:f_fmt_left_parens])
